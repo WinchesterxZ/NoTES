@@ -1,0 +1,61 @@
+
+
+Get-Domain
+Get-DomainSID
+Get-DomainPolicy
+
+Get-DomainController
+Get-DomainController -Domain domainName
+
+Get-DomainUser | select samaccountname
+Get-DomainUser -Name administrator
+
+
+
+sid of admin is the same as dc but 500 in end other user from 1000 incremental 
+by default admin is member of all groups has all permissions 
+badpwdcouunt : how many times this admin made a weak password 
+
+#one liner
+Get-DomainUser -Name mandy.bryan | select SamAccountName,Description,DoesNotRequirePreAuth,ServicePrincipalNames,MemberOf,TrustedForDelegation,Tr
+ustedToAuthForDelegation,ObjectSID,BadLogonCount,pwdLastSet,logoncount,badpwdcount
+
+
+
+ Your credentials have been generated: Username: joel.pearce Password: E3IIDNiiT96 
+ 
+ 
+ Get-DomainComputer
+ Get-DomainComputer -Name comName
+ 
+ #one Liner
+ 
+ 
+ Get-DomainGroup 
+  Get-DomainGroup -Name
+  #search all domain for admin
+ Get-DomainGroup -Name *admin* | select name
+	
+Get-DomainGroupMember -Name nameOfGroup
+ex: Get-DomainGroupMember -Name "Domain Admins"
+
+
+# check user in which groups
+Get-DomainGroup -Username name | select Name
+
+# get local groups on my machine only
+Get-NetLocalGroup
+
+
+Invoke-ShareFinder -Verbose
+
+
+nxc smb 10.200.71.101 -u 'joel.pearce' -p 'E3IIDNiiT96'
+ nxc smb 10.200.71.101 -u 'joel.pearce' -p 'E3IIDNiiT96' --local-auth
+ nxc smb 10.200.71.0/24 -u 'joel.pearce' -p 'E3IIDNiiT96'
+ nxc smb 10.200.71.0/24 -u 'joel.pearce' -p 'E3IIDNiiT96' --shares -M spider_plus
+ 
+ .\SharpHound.exe -c all
+ ./rusthound -u joel.pearce -p E3IIDNiiT96 za.tryhackme.com --zip
+ bloodhound-python -c All -u 'TABATHA_BRITT' -p 'marlboro(1985)' -d thm.corp -ns 10.10.71.8 --zip
+ 

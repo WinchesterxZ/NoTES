@@ -1,0 +1,18 @@
+
+Lab 1 
+
+change sub to administrator
+
+lab2 
+
+change sub to administrator
+
+and alg to none
+
+Lab3 
+
+there is a weak signture key 
+u will take te jwt token and crack it 
+hashcat -a 0 -m 16500 jwt.txt jwt.secrets.list
+then recalculate new signture key 
+

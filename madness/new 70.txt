@@ -1,0 +1,41 @@
+447911 123456
+
+44 7911 123456
+Hopperoo
+210701
+Answer format: ***{*********_******_****}
+			   THM{123456789_210701_1234}
+// 1. Delete the Face ID overlay
+document.getElementById('changePasscodeFaceId').style.display = 'none';
+
+// 2. Force the Keypad to appear
+const keypad = document.getElementById('securityPasscodeLock');
+keypad.classList.remove('hidden');
+keypad.style.display = 'flex';
+
+
+
+
+// Bypass Login and 2FA checks
+window.bankAuthenticated = true;
+window.bank2FAVerified = true;
+
+// Remove the hidden class from the dashboard so you can see it
+document.getElementById('bankLoginForm').classList.add('hidden');
+document.getElementById('bankDashboard').classList.remove('hidden');
+
+THM{hopper_hash_cracked!}
+
+
+Answer format: ***{hopper**_******_******_*}
+
+sbreachblocker@easterbunnies.thm
+malharerocks
+
+
+notice another string that is being used as a part of a request that is being constructed.
+
+ infosecadventures.allsafe
+ 
+ email INE :mohamed.mahmoud79@ai.menofia.edu.eg
+pass:VkC$q@iE"c4Uwj_

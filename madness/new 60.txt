@@ -1,0 +1,41 @@
+naughtylist
+
+winter4ever
+lrwxrwxrwx  1 ubuntu ubuntu      18 Dec  4 07:27 lock -> 10.49.97.134:+5240
+
+ce_CW1vei1leHRlbnNpb246Ly9hNmNlZGU1OS1kNjQ0LTRhZDQtOTYyZC1lMTIzYmRkOTA4ZGM=
+	moz-extension://a6cede59-d644-4ad4-962d-e123bdd908dc
+a,	moz-extension://a6cede59-d644-4ad4-962d-e123bdd908dc
+ce_YSwJbW96LWV4dGVuc2lvbjovL2E2Y2VkZTU5LWQ2NDQtNGFkNC05NjJkLWUxMjNiZGQ5MDhkYw==
+
+ls -la /home/ubuntu/.local/share/Trash/files/
+
+
+malhare
+
+/7ln6Z1X9EF
+
+
+https://github.com/hextreeio/android-challenge1/tree/master
+
+
+p1zd0nt57341myp455
+Temp file: /tmp/b68vC103RH
+Requires key "EastMass" to grant access
+Commands: 1=execute, 2=load payload, 3=delete, 4=exit
+
+
+
+Opens socket server on port 4444
+
+
+ Shell LD_PRELOAD=./pwn.so ./server [in /mnt/c/Users/ahmed/Downloads/4.2.0-R1-1337-se… (ctrl+f to focus) │
+│                                                                                                            │
+│    dhcpcd:x:100:65534:DHCP Client Daemon,,,:/usr/lib/dhcpcd:/bin/false                                     │
+│    messagebus:x:101:102::/nonexistent:/usr/sbinPayload Storage Malhare's                                   │
+│    Version 4.2.0                                                                                           │
+│    [1] C:                                                                                                  │
+│    [2] U:                                                                                                  │
+│    [3] D:                                                                                                  │
+│    [4] E:                                                                                                  │
+│    >>        

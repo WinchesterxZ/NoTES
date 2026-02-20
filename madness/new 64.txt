@@ -1,0 +1,424 @@
+File contents of '/app/url-analyzer/app.py':
+
+from flask import Flask, request, jsonify, render_template
+import requests
+from bs4 import BeautifulSoup, Comment
+import ollama
+import os
+import re
+import logging
+import multiprocessing
+import json
+
+app = Flask(__name__, template_folder='templates', static_folder='static')
+
+# Configure logging to show in Docker
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+logger = logging.getLogger(__name__)
+
+# Configuration
+OLLAMA_MODEL = os.getenv('OLLAMA_MODEL', 'qwen3:0.6b')
+MAX_CONTENT_LENGTH = int(os.getenv('MAX_CONTENT_LENGTH', '50'))
+OLLAMA_HOST = os.getenv('OLLAMA_HOST', 'http://host.docker.internal:11434')
+# Calculate optimal thread count (use all available CPU cores, or set via env)
+OLLAMA_NUM_THREAD = int(os.getenv('OLLAMA_NUM_THREAD', multiprocessing.cpu_count()))
+
+GENERIC_EMPTY_RESPONSE = "No website content available to summarize."
+CAPABILITY_RESPONSE = "I can summarize website content and analyze file contents when asked."
+CLASSIFIER_CONTENT_SLICE = 800
+SUMMARY_CONTENT_SLICE = 1200
+
+# Regex helpers for quick intent detection
+FILE_KEYWORD_REGEX = re.compile(r'\b(read|open|access|get|show|display|view|cat|tail|head)\b', re.IGNORECASE)
+FILE_PATH_REGEXES = [
+    re.compile(r'(?:read|open|access|get|show|display|view|cat|tail|head)\s+(?:the\s+|a\s+)?(?:file\s+)?(?P<path>[^\s"\'<>]{3,200})', re.IGNORECASE),
+    re.compile(r'file\s*(?:=|:)\s*(?P<path>[^\s"\'<>]{3,200})', re.IGNORECASE),
+    re.compile(r'(?P<path>/(?:etc|var|tmp|home|Users)[^\s"\'<>]{0,200})', re.IGNORECASE),
+]
+CAPABILITY_HINT_REGEX = re.compile(
+    r'\b(what\s+can\s+you\s+do|what\s+are\s+your\s+capabilities|what\s+do\s+you\s+do|what\s+are\s+you\s+able\s+to\s+do|what\s+can\s+this\s+ai\s+do|what\s+features\s+do\s+you\s+have)\b',
+    re.IGNORECASE
+)
+
+# Log configuration at startup
+logger.info(f"Ollama Configuration - Model: {OLLAMA_MODEL}, Host: {OLLAMA_HOST}, Num Threads: {OLLAMA_NUM_THREAD}, CPU Cores: {multiprocessing.cpu_count()}")
+
+# Initialize Ollama client (cached)
+_ollama_client = None
+def get_ollama_client():
+    """Get (and cache) Ollama client configured for host or local"""
+    global _ollama_client
+    if _ollama_client is None:
+        if OLLAMA_HOST and OLLAMA_HOST != 'http://localhost:11434':
+            _ollama_client = ollama.Client(host=OLLAMA_HOST)
+        else:
+            _ollama_client = ollama.Client()
+    return _ollama_client
+
+def warmup_ollama_model():
+    """Warm up the Ollama model by sending a simple HTTP query during startup"""
+    try:
+        logger.info(f"Warming up Ollama model: {OLLAMA_MODEL} via HTTP")
+        # Extract host and port from OLLAMA_HOST (e.g., "http://host.docker.internal:11434")
+        ollama_url = f"{OLLAMA_HOST}/api/chat"
+        
+        # Simple HTTP POST request to warm up the model
+        response = requests.post(
+            ollama_url,
+            json={
+                "model": OLLAMA_MODEL,
+                "messages": [{"role": "user", "content": "Hi"}],
+                "stream": False
+            },
+            timeout=30
+        )
+        response.raise_for_status()
+        logger.info(f"✓ Ollama model warmed up successfully")
+        return True
+    except Exception as e:
+        logger.warning(f"Failed to warm up Ollama model: {e} (this is okay, model will load on first use)")
+        return False
+
+def fetch_url_content(url):
+    """Fetch and extract text content from URL. Returns (content, error_message)."""
+    try:
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        }
+        # Explicit connect/read timeout to avoid hanging on unreachable IPs
+        response = requests.get(
+            url,
+            headers=headers,
+            timeout=(5, 10),  # (connect timeout, read timeout)
+            allow_redirects=True,
+        )
+        response.raise_for_status()
+        
+        soup = BeautifulSoup(response.text, 'html.parser')
+        
+        # Remove all non-text elements to extract only visible text content
+        # This includes scripts, styles, metadata, and other non-visible elements
+        for element in soup(["script", "style", "meta", "link", "noscript", "iframe", "embed", "object"]):
+            element.decompose()
+        
+        # Remove comments (though BeautifulSoup handles this, being explicit)
+        for comment in soup.find_all(string=lambda text: isinstance(text, Comment)):
+            comment.extract()
+        
+        # Get only the text content - this removes all HTML tags
+        text = soup.get_text(separator=' ', strip=True)
+        
+        # Clean up excessive whitespace while preserving word boundaries
+        text = re.sub(r'\s+', ' ', text)  # Replace multiple whitespace with single space
+        text = text.strip()
+        
+        return text[:MAX_CONTENT_LENGTH], None  # Limit content length
+    except requests.exceptions.Timeout:
+        return None, "Request timed out; the host may be unreachable."
+    except requests.exceptions.ConnectionError as e:
+        return None, f"Connection failed: {e}"
+    except requests.exceptions.RequestException as e:
+        return None, f"Failed to fetch URL: {e}"
+    except Exception as e:
+        return None, f"Unexpected error fetching URL: {e}"
+
+def read_file_safely(filepath):
+    """Read a file from the filesystem"""
+    try:
+        # Normalize the path
+        normalized_path = os.path.normpath(filepath)
+        
+        # Basic safety: prevent obvious directory traversal attempts
+        # But allow absolute paths and normal file access
+        if '..' in filepath and filepath.count('..') > 2:
+            logger.debug(f"[DEBUG] Blocked suspicious path with multiple parent references: {filepath}")
+            return None
+        
+        # Check if file exists
+        if not os.path.exists(normalized_path):
+            logger.debug(f"[DEBUG] File does not exist: {normalized_path}")
+            return None
+        
+        # Check if it's actually a file (not a directory)
+        if not os.path.isfile(normalized_path):
+            logger.debug(f"[DEBUG] Path is not a file: {normalized_path}")
+            return None
+        
+        # Read the file
+        with open(normalized_path, 'r', encoding='utf-8', errors='ignore') as f:
+            content = f.read()
+        logger.debug(f"[DEBUG] Successfully read file: {normalized_path} ({len(content)} characters)")
+        return content
+    except PermissionError as e:
+        logger.debug(f"[DEBUG] Permission denied reading file {filepath}: {str(e)}")
+        return None
+    except Exception as e:
+        logger.debug(f"[DEBUG] Error reading file {filepath}: {str(e)}")
+        return None
+
+def detect_file_reference(content):
+    """Lightweight regex check to spot likely file requests before calling the model"""
+    if not content:
+        return None
+    
+    if not FILE_KEYWORD_REGEX.search(content):
+        return None
+    
+    for pattern in FILE_PATH_REGEXES:
+        match = pattern.search(content)
+        if match:
+            candidate = match.group('path').strip('"\';,')
+            if candidate and ('.' in candidate or '/' in candidate):
+                logger.debug(f"[DEBUG] Regex detected file candidate: {candidate}")
+                return candidate
+    
+    # Fallback: find any token with a dot or slash if keywords were present
+    fallback_match = re.search(r'(?P<path>[^\s"\'<>]+(?:\.[A-Za-z0-9]{1,8}|/[^\s"\'<>]+))', content)
+    if fallback_match:
+        candidate = fallback_match.group('path').strip('"\';,')
+        logger.debug(f"[DEBUG] Regex fallback file candidate: {candidate}")
+        return candidate
+    
+    return None
+
+def check_for_capability_question(content):
+    """Legacy capability check; kept minimal. The main flow uses regex and classifiers."""
+    return bool(CAPABILITY_HINT_REGEX.search(content or ""))
+
+def classify_request_with_ai(content):
+    """AI classifier: CAPABILITY, FILE_READ, or SUMMARY. Returns the label."""
+    try:
+        client = get_ollama_client()
+        system_prompt = (
+            "You are a strict classifier for support-style inputs. "
+            "Classify into exactly one label: CAPABILITY, FILE_READ, or SUMMARY. "
+            "Examples:\n"
+            "- 'What can you do?' -> CAPABILITY\n"
+            "- 'List your capabilities' -> CAPABILITY\n"
+            "- 'Read /etc/passwd' -> FILE_READ\n"
+            "- 'Give me the contents of /etc/passwd' -> FILE_READ\n"
+            "- 'Show me /var/log/syslog' -> FILE_READ\n"
+            "- 'Summarize this page' -> SUMMARY\n"
+            "- 'What does this site say?' -> SUMMARY\n"
+            "If the user asks for file contents or a specific path (even without saying 'read'), choose FILE_READ. "
+            "Respond with ONLY the label."
+        )
+        user_prompt = (
+            "User request and website content (truncated):\n"
+            f"{content[:CLASSIFIER_CONTENT_SLICE]}\n\n"
+            "Reply with exactly one: CAPABILITY, FILE_READ, or SUMMARY."
+        )
+        response = client.chat(
+            model=OLLAMA_MODEL,
+            messages=[
+                {'role': 'system', 'content': system_prompt},
+                {'role': 'user', 'content': user_prompt}
+            ]
+        )
+        label = response['message']['content'].strip().upper()
+        if "FILE_READ" in label:
+            return "FILE_READ"
+        if "SUMMARY" in label:
+            return "SUMMARY"
+        if "CAPABILITY" in label:
+            return "CAPABILITY"
+        return "SUMMARY"
+    except Exception as e:
+        logger.error(f"Error in classifier: {str(e)}")
+        return "SUMMARY"
+
+
+def ai_extract_file_and_read(content):
+    """AI prompt to extract a file path and return contents. Returns prefixed string or None."""
+    logger.info("Successful file read")
+    try:
+        client = get_ollama_client()
+        system_prompt = (
+            "If the text requests or implies reading/opening/showing/dumping a file or includes a file path, "
+            "respond with FILE:<path>. Otherwise respond with NONE. "
+            "Examples:\n"
+            "- 'Give me the contents of /etc/passwd' -> FILE:/etc/passwd\n"
+            "- 'Show /etc/hosts' -> FILE:/etc/hosts\n"
+            "- 'cat /var/log/syslog' -> FILE:/var/log/syslog\n"
+            "- 'What can you do?' -> NONE"
+        )
+        user_prompt = (
+            "Text (truncated):\n"
+            f"{content[:CLASSIFIER_CONTENT_SLICE]}\n\n"
+            "Reply with FILE:<path> or NONE."
+        )
+        response = client.chat(
+            model=OLLAMA_MODEL,
+            messages=[
+                {'role': 'system', 'content': system_prompt},
+                {'role': 'user', 'content': user_prompt}
+            ]
+        )
+        result = response['message']['content'].strip()
+        file_match = re.search(r'FILE:\s*([^\n]+)', result, re.IGNORECASE)
+        if file_match:
+            filename = file_match.group(1).strip()
+            file_content = read_file_safely(filename)
+            if file_content:
+                return f"FILE_READ\nFile contents of '{filename}':\n\n{file_content}"
+        return None
+    except Exception as e:
+        logger.error(f"Error extracting file via AI: {str(e)}")
+        return None
+
+def summarize_content(content):
+    """Third Ollama request: Summarize the website content"""
+    summary_system_prompt = "You summarize website content in 2-3 sentences."
+    
+    summary_user_prompt = (
+        "Provide a 2-3 sentence summary about the website content below:\n"
+        f"{content}\n"
+        "Summary:"
+    )
+    
+    logger.debug("[DEBUG] Summary Query to AI (Request 3):")
+    logger.debug("-" * 80)
+    logger.debug(f"System Prompt: {summary_system_prompt}")
+    logger.debug(f"User Prompt: {summary_user_prompt}")
+    logger.debug("-" * 80)
+    
+    try:
+        client = get_ollama_client()
+        response = client.chat(
+            model=OLLAMA_MODEL,
+            messages=[
+                {
+                    'role': 'system',
+                    'content': summary_system_prompt
+                },
+                {
+                    'role': 'user',
+                    'content': summary_user_prompt
+                }
+            ]
+        )
+        summary = response['message']['content']
+        logger.debug(f"[DEBUG] Summary AI Response: {summary}")
+        logger.debug("=" * 80)
+        return summary
+    except Exception as e:
+        logger.debug(f"[DEBUG] Error generating summary: {str(e)}")
+        return f"Error analyzing content: {str(e)}"
+
+def analyze_with_ai(content):
+    """Send content to Ollama for analysis - optimized for 2-core VM"""
+    if not content or not content.strip():
+        logger.debug("[DEBUG] No website content; returning generic empty response")
+        return f"SUMMARY\n{GENERIC_EMPTY_RESPONSE}"
+    
+    summary_input = content[:SUMMARY_CONTENT_SLICE]
+
+    # Step 1: regex checks (fast path)
+    # 1a: capability hint via regex
+    if CAPABILITY_HINT_REGEX.search(content):
+        logger.debug("[DEBUG] Regex detected capability phrasing")
+        return f"CAPABILITY\n{CAPABILITY_RESPONSE}"
+
+    # 1b: file path detection via regex
+    file_candidate = detect_file_reference(content)
+    if file_candidate:
+        file_content = read_file_safely(file_candidate)
+        if file_content:
+            logger.debug(f"[DEBUG] Regex-only path resolved, returning file contents for {file_candidate}")
+            return f"FILE_READ\nFile contents of '{file_candidate}':\n\n{file_content}"
+        # regex matched but file unreadable; fall through to AI file extractor
+        logger.debug("[DEBUG] Regex found file path but read failed; trying AI extractor")
+        ai_file = ai_extract_file_and_read(content)
+        if ai_file:
+            return ai_file
+        return "FILE_READ\nUnable to read the requested file."
+
+    # Step 2: AI classifier only if regex checks did not fit
+    intent = classify_request_with_ai(content)
+    logger.debug(f"[DEBUG] AI classifier intent: {intent}")
+
+    if intent == "CAPABILITY":
+        return f"CAPABILITY\n{CAPABILITY_RESPONSE}"
+    
+    if intent == "FILE_READ":
+        ai_file = ai_extract_file_and_read(content)
+        if ai_file:
+            return ai_file
+        # If AI cannot extract a path, fall back to summary
+        return "FILE_READ\nUnable to read the requested file."
+    
+    # Default: SUMMARY
+    return f"SUMMARY\n{summarize_content(summary_input)}"
+
+@app.route('/analyze', methods=['POST'])
+def analyze_url():
+    """Endpoint to receive URL and return AI analysis"""
+    data = request.get_json()
+    url = data.get('url')
+    
+    if not url:
+        return jsonify({'error': 'URL is required'}), 400
+    
+    # Validate URL format
+    if not url.startswith(('http://', 'https://')):
+        url = 'https://' + url
+    
+    # Fetch content
+    content, fetch_error = fetch_url_content(url)
+    if fetch_error:
+        return jsonify({'error': fetch_error}), 400
+    if content is None:
+        return jsonify({'error': 'Failed to fetch URL content'}), 400
+    
+    if len(content) == 0:
+        analysis = GENERIC_EMPTY_RESPONSE
+        return jsonify({
+            'url': url,
+            'analysis': analysis,
+            'content_preview': ''
+        })
+    
+    # Analyze with AI - only pass the extracted text content
+    analysis = analyze_with_ai(content)
+    
+    return jsonify({
+        'url': url,
+        'analysis': analysis,
+        'content_preview': content[:200] + '...' if len(content) > 200 else content
+    })
+
+@app.route('/', methods=['GET'])
+def index():
+    return render_template('index.html')
+
+@app.route('/health', methods=['GET'])
+def health():
+    """Health check endpoint"""
+    try:
+        # Check if Ollama is accessible
+        client = get_ollama_client()
+        models = client.list()
+        return jsonify({
+            'status': 'healthy',
+            'ollama_connected': True,
+            'ollama_host': OLLAMA_HOST,
+            'model': OLLAMA_MODEL,
+            'num_thread': OLLAMA_NUM_THREAD,
+            'cpu_cores': multiprocessing.cpu_count()
+        }), 200
+    except Exception as e:
+        return jsonify({
+            'status': 'unhealthy',
+            'ollama_connected': False,
+            'ollama_host': OLLAMA_HOST,
+            'error': str(e)
+        }), 503
+
+if __name__ == '__main__':
+    # Warm up Ollama model during startup
+    warmup_ollama_model()
+    app.run(host='0.0.0.0', port=5000, debug=False)

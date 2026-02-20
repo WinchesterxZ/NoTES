@@ -1,0 +1,23 @@
+python3 -m venv ~/venvs/myenv
+source ~/venvs/myenv/bin/activate
+
+
+adb devices 
+emulator.exe -list-avds 
+emulator.exe -avd Pixel_4
+
+
+adb root
+adb shell 
+su
+
+/storage/self/primary/Download
+adb push fileName location 
+adb pull fileName location
+
+adb install app.apk
+
+└─$ adb shell settings put global http_proxy 127.0.0.1:8080
+└─$ adb connect 127.0.0.1:58526
+#decompile
+apktool d test.apk

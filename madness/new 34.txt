@@ -1,0 +1,63 @@
+Verify a list of web hosts are reachable and report status codes.
+Test common paths (e.g., /admin, /backup) and report 200/403/301 responses.
+Combine two files into one file and remove duplicates 
+Extract the secrets from a JS/HTML file
+
+Task:
+1-	How does the browser work?
+2-	What does api mean?
+3-	What is the model or technology that let you open multiple taps in parallel on google?
+4-	What are the HTTP headers that are handeled by default by the browser? And what are handeled by developer?
+5-	What happen when you inject the Ethernet cable in your laptop and open the browser then access google.com
+6-	What is the difference between class and object in programming?
+7-	What is inheritance in programming?
+8-	What is chmod in linux?
+9-	What is +x in linux?
+10-	What is re,beautifulsoup,requests libraries in python?
+
+1-	Nmap IP/Domain
+2-	Subdomain Enumeration [sublister/assetfinder/subfinder]
+3-	Directory Fuzzing [dirb/dirsearch/gobuster/ffuf]
+4-	Parameter Fuzzing [ffuf/waybackurl]
+5-	Shodan/CensysSearch/crt.sh [Search Engines]
+6-	Github secrets/password/token [Passive Scan]
+7-	Google Dorks [Search]
+8-	Javascript/html analysis [JS Finder/sensitive data]
+9-	Wapplyzer [Technologies]
+
+
+- https://www.root-me.org/en/Challenges/Web-Client/XSS-Stored-1
+Write a POC report
+https://www.root-me.org/en/Challenges/Web-Server/PHP-Command-injection
+https://www.root-me.org/en/Challenges/Web-Server/Command-injection-Filter-bypass
+https://www.root-me.org/en/Challenges/Web-Server/CRLF
+https://www.root-me.org/en/Challenges/Web-Server/SQL-injection-authentication
+https://www.root-me.org/en/Challenges/Web-Server/SQL-injection-Error
+https://www.root-me.org/en/Challenges/Web-Server/SQL-injection-Time-based
+
+1- Trigger a SQLi Error
+2- Extract table name
+3- Extract Column name
+4- Extract password hashes and crack admin hash
+5- version of database
+6- Hostname
+7- current database
+8- Database Name
+9- location of the database
+10- Blind SQLi
+11- List all Databases
+
+Tasks:
+1-https://www.root-me.org/en/Challenges/Web-Server/SQL-injection-File-reading
+2- SQLI to RCE [DVWA] 
+Write a POC report for both
+3- Search for SQLI to RCE [MSSQL]
+
+https://www.root-me.org/en/Challenges/Web-Server/Local-File-Inclusion
+https://www.root-me.org/en/Challenges/Web-Server/Local-File-Inclusion-Double-encoding
+https://www.root-me.org/en/Challenges/Web-Server/Local-File-Inclusion-Wrappers
+https://www.root-me.org/en/Challenges/Web-Server/Remote-File-Inclusion
+
+Report
+LFI, RFI to RCE
+Information Disclosure http://testphp.vulnweb.com/

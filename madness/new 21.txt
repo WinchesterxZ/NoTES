@@ -1,0 +1,21 @@
+Task:
+1-	How does the browser work?
+
+2-	What does api mean?
+3-	What is the model or technology that let you open multiple taps in parallel on google?
+4-	What are the HTTP headers that are handeled by default by the browser? And what are handeled by developer?
+5-	What happen when you inject the Ethernet cable in your laptop and open the browser then access google.com
+6-	What is the difference between class and object in programming?
+7-	What is inheritance in programming?
+8-	What is chmod in linux?
+9-	What is +x in linux?
+10-	What is re,beautifulsoup,requests libraries in python?
+
+
+
+# Cyber kill chain 
+1 recon / info gathering 
+2- scanning ( vuln assessmnet)
+3 - exploit
+4 - post Exploitation 
+5 - report

